@@ -23,6 +23,13 @@ class DashboardShellTest {
         mockMvc.perform(get("/index.html"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("SecureFlow")))
-                .andExpect(content().string(containsString("Active alerts")));
+                .andExpect(content().string(containsString("Active alerts")))
+                .andExpect(content().string(containsString("create-transaction-form")))
+                .andExpect(content().string(containsString("name=\"accountId\"")))
+                .andExpect(content().string(containsString("name=\"payeeId\"")))
+                .andExpect(content().string(containsString("name=\"amount\"")))
+                .andExpect(content().string(containsString("name=\"currency\"")))
+                .andExpect(content().string(containsString("name=\"transactionTime\"")))
+                .andExpect(content().string(containsString("submit-transaction")));
     }
 }
