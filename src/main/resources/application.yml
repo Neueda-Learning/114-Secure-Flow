@@ -30,3 +30,16 @@ management:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+monitoring:
+  rules:
+    amount:
+      enabled: true
+      threshold: 10000.00
+      currency: USD
+    velocity:
+      enabled: true
+      maximum-transactions: 5
+      window-minutes: 10
+    new-payee:
+      enabled: true

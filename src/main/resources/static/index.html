@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SecureFlow transaction monitoring dashboard">
+    <title>SecureFlow | Transaction Monitoring</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="/">SecureFlow</a>
+    <span class="system-status">Monitoring active</span>
+</header>
+<main class="page">
+    <section class="hero">
+        <div>
+            <p class="eyebrow">TRANSACTION MONITORING</p>
+            <h1>Operations overview</h1>
+            <p class="subtitle">Review transactions and investigate alerts from one clear workspace.</p>
+        </div>
+        <button type="button">Add transaction</button>
+    </section>
+    <section class="summary-grid" aria-label="Dashboard summary">
+        <article class="summary-card danger"><span>Active alerts</span><strong>0</strong><small>Requires review</small></article>
+        <article class="summary-card"><span>Transactions today</span><strong>0</strong><small>Processed safely</small></article>
+        <article class="summary-card"><span>Alerts today</span><strong>0</strong><small>Across three rules</small></article>
+        <article class="summary-card"><span>Volume today</span><strong>$0.00</strong><small>USD monitored</small></article>
+    </section>
+    <section class="panel">
+        <div class="panel-heading">
+            <div><p class="eyebrow">LIVE QUEUE</p><h2>Active alerts</h2></div>
+            <a href="#transactions">View transactions</a>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Alert</th><th>Severity</th><th>Status</th><th>Created</th></tr></thead>
+                <tbody><tr><td class="empty" colspan="4">No alerts yet. New alerts will appear here.</td></tr></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>
