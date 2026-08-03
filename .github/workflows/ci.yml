@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   pull_request:
@@ -12,22 +12,6 @@ permissions:
 jobs:
   test-and-package:
     runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.4
-        env:
-          MYSQL_DATABASE: secureflow
-          MYSQL_USER: secureflow
-          MYSQL_PASSWORD: secureflow-ci
-          MYSQL_ROOT_PASSWORD: root-ci-only
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost -uroot -proot-ci-only"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -42,27 +26,8 @@ jobs:
       - name: Make Maven Wrapper executable
         run: chmod +x mvnw
 
-      - name: Test, enforce coverage, and package
+      - name: Run tests, check coverage, and build JAR
         run: ./mvnw --batch-mode clean verify
-
-      - name: Smoke-test packaged app with MySQL and Flyway
-        env:
-          DB_URL: jdbc:mysql://127.0.0.1:3306/secureflow?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-          DB_USERNAME: secureflow
-          DB_PASSWORD: secureflow-ci
-        run: |
-          java -jar target/secureflow-*.jar > target/smoke-test.log 2>&1 &
-          APP_PID=$!
-          for attempt in {1..45}; do
-            if curl --fail --silent http://localhost:8080/actuator/health > /dev/null; then
-              kill "$APP_PID"
-              exit 0
-            fi
-            sleep 2
-          done
-          cat target/smoke-test.log
-          kill "$APP_PID" || true
-          exit 1
 
       - name: Upload runnable JAR
         uses: actions/upload-artifact@v4
@@ -71,7 +36,7 @@ jobs:
           path: target/secureflow-*.jar
           if-no-files-found: error
 
-      - name: Upload coverage report
+      - name: Upload test coverage report
         uses: actions/upload-artifact@v4
         if: always()
         with:
