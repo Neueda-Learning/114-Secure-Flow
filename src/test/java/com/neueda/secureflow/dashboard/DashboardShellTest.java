@@ -30,6 +30,11 @@ class DashboardShellTest {
                 .andExpect(content().string(containsString("name=\"amount\"")))
                 .andExpect(content().string(containsString("name=\"currency\"")))
                 .andExpect(content().string(containsString("name=\"transactionTime\"")))
-                .andExpect(content().string(containsString("submit-transaction")));
+                .andExpect(content().string(containsString("submit-transaction")))
+                .andExpect(content().string(containsString("demo-high")))
+                .andExpect(content().string(containsString("demo-new")))
+                .andExpect(content().string(containsString("demo-velocity")))
+                .andExpect(content().string(containsString("alert-history-body")))
+                .andExpect(content().string(containsString("alert-detail")));
     }
 }
