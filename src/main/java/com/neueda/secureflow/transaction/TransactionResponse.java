@@ -13,7 +13,7 @@ public record TransactionResponse(
         String description,
         Instant createdAt
 ) {
-    static TransactionResponse from(TransactionEntity transaction) {
+    public static TransactionResponse from(TransactionEntity transaction) {
         return new TransactionResponse(
                 transaction.getId(),
                 transaction.getAccountId(),
