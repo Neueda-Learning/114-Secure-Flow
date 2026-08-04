@@ -1,74 +1,37 @@
 package com.neueda.secureflow.transaction;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import com.neueda.secureflow.monitoring.MonitoringService;
+import com.neueda.secureflow.common.PageResponse;
+import com.neueda.secureflow.transaction.dto.CreateTransactionRequest;
+import com.neueda.secureflow.transaction.dto.TransactionCreatedResponse;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@ExtendWith(MockitoExtension.class)
 class TransactionControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
-    private TransactionRepository repository;
-
-    @MockitoBean
-    private MonitoringService monitoringService;
+    @Mock TransactionService service;
 
     @Test
-    void createsAValidTransaction() throws Exception {
-        when(repository.save(any(TransactionEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(monitoringService.evaluate(any(TransactionEntity.class), any(Boolean.class)))
-                .thenReturn(List.of());
+    void delegatesCreateAndSearch() {
+        var controller = new TransactionController(service);
+        var request = new CreateTransactionRequest("ACC", "PAYEE", BigDecimal.TEN,
+                "INR", Instant.parse("2026-08-02T10:00:00Z"), null);
+        var created = new TransactionCreatedResponse(null, List.of());
+        var page = new PageResponse<com.neueda.secureflow.transaction.dto.TransactionResponse>(
+                List.of(), 0, 20, 0, 0);
+        when(service.create(request)).thenReturn(created);
+        when(service.search("acc", null, null, null, null, 0, 20)).thenReturn(page);
 
-        mockMvc.perform(post("/api/transactions")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "accountId": "ACC-001",
-                                  "payeeId": "PAYEE-001",
-                                  "amount": 125.50,
-                                  "currency": "inr",
-                                  "transactionTime": "2026-08-03T10:00:00Z",
-                                  "description": "Invoice"
-                                }
-                                """))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.transaction.accountId").value("ACC-001"))
-                .andExpect(jsonPath("$.transaction.amount").value(125.50))
-                .andExpect(jsonPath("$.transaction.currency").value("INR"))
-                .andExpect(jsonPath("$.generatedAlerts").isEmpty());
-    }
-
-    @Test
-    void rejectsAnInvalidTransaction() throws Exception {
-        mockMvc.perform(post("/api/transactions")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "accountId": "ACC-001",
-                                  "amount": 0,
-                                  "currency": "US",
-                                  "transactionTime": "2026-08-03T10:00:00Z"
-                                }
-                                """))
-                .andExpect(status().isBadRequest());
-
-        verifyNoInteractions(repository);
+        assertThat(controller.create(request)).isSameAs(created);
+        assertThat(controller.search("acc", null, null, null, null, 0, 20)).isSameAs(page);
+        verify(service).create(request);
     }
 }

@@ -1,45 +1,63 @@
 package com.neueda.secureflow.transaction;
 
-import com.neueda.secureflow.alert.AlertResponse;
+import com.neueda.secureflow.alert.AlertMapper;
 import com.neueda.secureflow.common.BadRequestException;
 import com.neueda.secureflow.common.PageResponse;
+import com.neueda.secureflow.config.MonitoringProperties;
 import com.neueda.secureflow.monitoring.MonitoringService;
+import com.neueda.secureflow.transaction.dto.CreateTransactionRequest;
+import com.neueda.secureflow.transaction.dto.TransactionCreatedResponse;
+import com.neueda.secureflow.transaction.dto.TransactionResponse;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
-import java.util.List;
 import java.util.Locale;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class TransactionService {
     private final TransactionRepository repository;
-    private final MonitoringService monitoring;
+    private final MonitoringService monitoringService;
+    private final MonitoringProperties properties;
+    private final Clock clock;
 
-    public TransactionService(TransactionRepository repository, MonitoringService monitoring) {
+    @Autowired
+    public TransactionService(TransactionRepository repository, MonitoringService monitoringService,
+                              MonitoringProperties properties) {
+        this(repository, monitoringService, properties, Clock.systemUTC());
+    }
+
+    TransactionService(TransactionRepository repository, MonitoringService monitoringService,
+                       MonitoringProperties properties, Clock clock) {
         this.repository = repository;
-        this.monitoring = monitoring;
+        this.monitoringService = monitoringService;
+        this.properties = properties;
+        this.clock = clock;
     }
 
     @Transactional
     public TransactionCreatedResponse create(CreateTransactionRequest request) {
+        if (!properties.amount().currency().equalsIgnoreCase(request.currency())) {
+            throw new BadRequestException("SecureFlow currently supports "
+                    + properties.amount().currency() + " transactions only");
+        }
+        Instant transactionTime = request.transactionTime() == null ? clock.instant() : request.transactionTime();
         boolean newPayee = !repository.existsByAccountIdAndPayeeId(
                 request.accountId().trim(), request.payeeId().trim());
-        TransactionEntity transaction = new TransactionEntity(
-                request.accountId().trim(),
-                request.payeeId().trim(),
-                request.amount(),
-                request.currency().toUpperCase(Locale.ROOT),
-                request.transactionTime(),
-                request.description(),
-                Instant.now());
 
-        transaction = repository.save(transaction);
-        List<AlertResponse> generatedAlerts = monitoring.evaluate(transaction, newPayee).stream()
-                .map(AlertResponse::from).toList();
-        return new TransactionCreatedResponse(TransactionResponse.from(transaction), generatedAlerts);
+        TransactionEntity transaction = repository.save(new TransactionEntity(
+                request.accountId().trim(), request.payeeId().trim(), request.amount(),
+                request.currency().toUpperCase(Locale.ROOT), transactionTime,
+                normalizeDescription(request.description()), clock.instant()));
+
+        var alerts = monitoringService.evaluate(transaction, newPayee);
+        return new TransactionCreatedResponse(TransactionMapper.toResponse(transaction),
+                alerts.stream().map(AlertMapper::toSummary).toList());
     }
 
     @Transactional(readOnly = true)
@@ -51,10 +69,14 @@ public class TransactionService {
         if (from != null && to != null && from.isAfter(to)) {
             throw new BadRequestException("from cannot be after to");
         }
-        var pageable = PageRequest.of(page, Math.min(size, 100),
+        PageRequest pageable = PageRequest.of(page, Math.min(size, 100),
                 Sort.by(Sort.Direction.DESC, "transactionTime"));
-        var result = repository.findAll(
+        Page<TransactionEntity> result = repository.findAll(
                 TransactionSpecifications.withFilters(search, minAmount, maxAmount, from, to), pageable);
-        return PageResponse.from(result, TransactionResponse::from);
+        return PageResponse.from(result, TransactionMapper::toResponse);
+    }
+
+    private String normalizeDescription(String description) {
+        return description == null || description.isBlank() ? null : description.trim();
     }
 }

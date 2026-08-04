@@ -1,33 +1,48 @@
-# Five-Minute Demonstration
+# SecureFlow Demo Script (18 Minutes)
 
-## Preparation
+## 0:00–2:00 — Person 1: problem and process
 
-- Confirm `docker compose ps` shows both containers as healthy.
-- Open the dashboard, Swagger UI, GitHub Actions, and repository documentation
-  in separate tabs.
-- Use fresh account IDs so the new-payee scenario is deterministic.
+- Introduce the four-person team.
+- Explain suspicious transaction monitoring in one sentence.
+- Show the GitHub Project and feature-branch/PR workflow.
+- State the current release boundary and why the team chose a focused design.
 
-## Script
+## 2:00–5:00 — Person 2: transactions
 
-1. **Problem and dashboard (30 seconds):** explain that SecureFlow records
-   transactions, evaluates transparent rules, and gives analysts an auditable
-   investigation queue.
-2. **New payee (45 seconds):** submit the first payment from `DEMO-001` to
-   `PAYEE-NEW`; show the medium-severity new-payee alert.
-3. **High amount (30 seconds):** submit ₹15,000 for the same pair; show the
-   high-severity amount alert and explain the strict ₹10,000 boundary.
-4. **Velocity (45 seconds):** submit enough payments for `DEMO-VELOCITY` to
-   reach six within ten minutes; show the high-severity velocity alert.
-5. **Investigation (60 seconds):** acknowledge an open alert, start
-   investigation, close it with a meaningful resolution note, and show its
-   history and linked transactions.
-6. **Search and rules (30 seconds):** filter the transaction table for `DEMO`
-   and show the read-only effective rule configuration.
-7. **Engineering evidence (45 seconds):** show Swagger, the architecture
-   diagram, a green CI run, coverage artifact, Docker Compose health, and the
-   published container workflow.
-8. **Close (15 seconds):** summarize: save transaction, run rules, create
-   alerts, investigate, retain the audit trail.
+- Explain the transaction fields and why money uses `BigDecimal`.
+- Add one normal transaction.
+- Search/filter it in the transaction ledger.
+- Explain MySQL persistence and Flyway.
 
-If external internet access fails, the locally deployed dashboard, Swagger UI,
-health endpoint, and `docker compose ps` output are sufficient backup evidence.
+## 5:00–8:00 — Person 3: rules
+
+- Show the read-only Rules screen.
+- Explain the Strategy interface in plain language: every rule receives the same transaction/context and may return a match.
+- Trigger high-amount and velocity scenarios.
+- Explain the exact boundary tests.
+
+## 8:00–12:00 — Person 4: alert operations
+
+- Open an alert and show linked transactions.
+- Acknowledge, start investigation, add notes, and close it.
+- Show the audit timeline and alert history.
+- Resize the browser briefly to show responsive design.
+
+## 12:00–15:00 — Person 1: quality and CI/CD
+
+- Show a green `clean verify`, the coverage percentage, and one test.
+- Show GitHub Actions: PR CI, MySQL/Flyway smoke test, JAR, and GHCR image.
+- Show the tested Linux Compose deployment and explain its localhost security boundary.
+
+## 15:00–18:00 — Everyone: learning and next steps
+
+- Each person states one challenge and one lesson.
+- Mention possible next work: daily limit, editable rules, deduplication, async processing, authentication.
+- Invite questions.
+
+## Backup plan
+
+- Rehearse with an empty database.
+- Keep screenshots of Overview, an alert timeline, Swagger, and a green workflow.
+- If live data creation fails, show Swagger responses and explain the error honestly.
+- Never hide a failure or edit database rows manually during the demo.

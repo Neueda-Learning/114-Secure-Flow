@@ -1,19 +1,26 @@
-## Summary
+## Linked story
 
-Describe the user-visible or technical change.
+Closes #
 
-## Related work
+## What changed and why
 
-- Issue/story: SF-
+-
 
-## Verification
+## Acceptance criteria checked
 
-- [ ] `./mvnw clean verify` or `.\mvnw.cmd clean verify` passes
-- [ ] Relevant automated tests were added or updated
-- [ ] Documentation was updated where required
-- [ ] No credentials, `.env`, generated files, or unrelated changes are included
-- [ ] UI changes were checked at desktop and mobile widths
+- [ ] Every acceptance criterion is satisfied.
+- [ ] I ran `./mvnw clean verify` or `.\mvnw.cmd clean verify`.
+- [ ] I added/updated meaningful tests.
+- [ ] I updated documentation/diagrams when behavior or architecture changed.
+- [ ] I can explain every changed line without AI assistance.
+- [ ] No password, token, `.env`, or unrelated file is included.
 
 ## Evidence
 
-Add API output, screenshots, test results, or other acceptance evidence.
+Test output, API example, or screenshot:
+
+## Human reviewer
+
+Reviewer: @
+
+Questions for the reviewer:

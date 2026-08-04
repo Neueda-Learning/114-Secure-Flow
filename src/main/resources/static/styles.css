@@ -88,15 +88,10 @@ h3 { margin-bottom: 7px; font-size: 1rem; }
 .panel { border: 1px solid var(--line); background: var(--surface); box-shadow: 0 2px 10px rgba(22,28,32,.04); overflow: hidden; }
 .panel-heading { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 17px 20px; border-bottom: 1px solid var(--line); }
 .panel-copy { margin: 16px 18px 7px; color: var(--muted); font-size: .79rem; }
-.demo-panel { grid-column: 2; grid-row: 1; }
-.demo-list { display: grid; padding: 4px 12px 14px; }
-.demo-list button { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 13px 9px; border: 0; border-bottom: 1px solid #eceeef; color: var(--text); background: white; text-align: left; }
-.demo-list button:last-child { border-bottom: 0; }
-.demo-list button:hover, .demo-list button:focus-visible { background: #f8f8f8; outline: 2px solid #c5c5c5; }
-.demo-list span, .demo-list b, .demo-list small { display: block; }
-.demo-list b { font-size: .84rem; }
-.demo-list small { margin-top: 2px; color: var(--muted); font-size: .7rem; font-weight: 400; }
-.demo-list i { color: var(--red); font-style: normal; }
+.entry-panel { grid-column: 2; grid-row: 1; }
+.entry-actions { display: grid; gap: 12px; padding: 18px; }
+.entry-actions .primary { justify-self: start; }
+.entry-actions small { color: var(--muted); font-size: .7rem; line-height: 1.5; }
 .rules-preview { grid-column: 2; grid-row: 2; }
 .preview-rule { display: grid; grid-template-columns: 9px 1fr auto; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid #eceeef; }
 .preview-rule:last-child { border: 0; }
@@ -248,7 +243,7 @@ input[readonly] { color: #555; background: #f0f1f2; }
     .sidebar-scrim.show { display: block; }
     .main-content { margin-left: 0; padding: 25px 18px 50px; }
     .overview-grid { grid-template-columns: 1fr; }
-    .span-two, .demo-panel, .rules-preview { grid-column: 1; grid-row: auto; }
+    .span-two, .entry-panel, .rules-preview { grid-column: 1; grid-row: auto; }
     .rules-grid { grid-template-columns: 1fr; }
     .health-layout, .detail-columns { grid-template-columns: 1fr; }
 }

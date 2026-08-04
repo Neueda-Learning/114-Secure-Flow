@@ -10,7 +10,6 @@
     const payeeIdInput = document.getElementById("payeeId");
     const amountInput = document.getElementById("amount");
     const currencyInput = document.getElementById("currency");
-    const transactionTimeInput = document.getElementById("transactionTime");
     const descriptionInput = document.getElementById("description");
     const submitButton = document.getElementById("submit-transaction");
 
@@ -28,21 +27,14 @@
         const payeeId = payeeIdInput.value.trim();
         const amount = Number.parseFloat(amountInput.value);
         const currency = "INR";
-        const transactionTime = transactionTimeInput.value;
 
-        if (!accountId || !payeeId || !transactionTime || Number.isNaN(amountInput.valueAsNumber)) {
+        if (!accountId || !payeeId || Number.isNaN(amountInput.valueAsNumber)) {
             showFeedback("Please fill in all required fields.", "error");
             return null;
         }
 
         if (!(amount > 0)) {
             showFeedback("Amount must be greater than 0.", "error");
-            return null;
-        }
-
-        const transactionDate = new Date(transactionTime);
-        if (Number.isNaN(transactionDate.getTime())) {
-            showFeedback("Transaction time is invalid.", "error");
             return null;
         }
 
@@ -53,7 +45,6 @@
             payeeId: payeeId,
             amount: amount,
             currency: currency,
-            transactionTime: transactionDate.toISOString(),
             description: description
         };
     }
