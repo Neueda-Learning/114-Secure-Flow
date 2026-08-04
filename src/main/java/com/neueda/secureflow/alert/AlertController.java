@@ -1,19 +1,27 @@
 package com.neueda.secureflow.alert;
 
 import jakarta.validation.Valid;
-import java.util.List;
+import com.neueda.secureflow.common.PageResponse;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/alerts")
+@Validated
 public class AlertController {
     private final AlertService service;
 
     public AlertController(AlertService service) { this.service = service; }
 
     @GetMapping
-    public List<AlertResponse> list(@RequestParam(required = false) AlertStatus status) {
-        return service.list(status);
+    public PageResponse<AlertResponse> list(
+            @RequestParam(required = false) AlertStatus status,
+            @RequestParam(required = false) AlertSeverity severity,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+        return service.list(status, severity, page, size);
     }
 
     @GetMapping("/{id}")
