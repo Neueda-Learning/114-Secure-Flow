@@ -12,6 +12,21 @@ permissions:
 jobs:
   test-and-package:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: secureflow
+          MYSQL_USER: secureflow
+          MYSQL_PASSWORD: secureflow
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -28,6 +43,20 @@ jobs:
 
       - name: Run tests, check coverage, and build JAR
         run: ./mvnw --batch-mode clean verify
+
+      - name: Smoke-test the packaged application
+        env:
+          DB_URL: jdbc:mysql://localhost:3306/secureflow?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+          DB_USERNAME: secureflow
+          DB_PASSWORD: secureflow
+        run: |
+          java -jar target/secureflow-*.jar > application.log 2>&1 &
+          for attempt in {1..30}; do
+            curl --fail http://localhost:8080/actuator/health && exit 0
+            sleep 2
+          done
+          cat application.log
+          exit 1
 
       - name: Upload runnable JAR
         uses: actions/upload-artifact@v4
