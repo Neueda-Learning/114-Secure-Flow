@@ -88,9 +88,18 @@ th { color: var(--muted); background: #f8fafb; font-size: 0.72rem; letter-spacin
 .badge.medium { color: #0f766e; background: #ccfbf1; }
 td button { padding: .45rem .7rem; font-size: .8rem; }
 table small { color: #667781; }
+.demo-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+.filter-grid { display: grid; grid-template-columns: 2fr repeat(4, 1fr); gap: .75rem; margin-bottom: 1rem; }
+.filter-grid label { display: grid; gap: .35rem; color: #52636d; font-size: .8rem; font-weight: 800; }
+.table-actions { display: flex; flex-wrap: wrap; gap: .35rem; }
+.table-actions .secondary { background: #e7eef2; color: #17324d; }
+.timeline { border-left: 3px solid #0f8b8d; list-style: none; padding-left: 1rem; }
+.timeline li { margin: 0 0 .8rem; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
 
 @media (max-width: 760px) {
     .rules-grid { grid-template-columns: 1fr; }
     .search-field { align-items: flex-start; flex-direction: column; }
     .search-field input { min-width: 0; width: 100%; }
+    .filter-grid, .detail-grid { grid-template-columns: 1fr; }
 }

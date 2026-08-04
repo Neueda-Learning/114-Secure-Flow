@@ -1,13 +1,14 @@
 package com.neueda.secureflow.transaction;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Locale;
 import com.neueda.secureflow.alert.AlertResponse;
+import com.neueda.secureflow.common.BadRequestException;
+import com.neueda.secureflow.common.PageResponse;
 import com.neueda.secureflow.monitoring.MonitoringService;
+import java.math.BigDecimal;
+import java.time.Instant;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.Sort;
 
 @Service
 public class TransactionService {
@@ -39,14 +40,18 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public List<TransactionResponse> list(String search) {
-        String term = search == null ? "" : search.trim().toLowerCase(Locale.ROOT);
-        return repository.findAll(Sort.by(Sort.Direction.DESC, "transactionTime")).stream()
-                .filter(transaction -> term.isEmpty()
-                        || transaction.getAccountId().toLowerCase(Locale.ROOT).contains(term)
-                        || transaction.getPayeeId().toLowerCase(Locale.ROOT).contains(term)
-                        || (transaction.getDescription() != null
-                            && transaction.getDescription().toLowerCase(Locale.ROOT).contains(term)))
-                .map(TransactionResponse::from).toList();
+    public PageResponse<TransactionResponse> search(String search, BigDecimal minAmount, BigDecimal maxAmount,
+                                                     Instant from, Instant to, int page, int size) {
+        if (minAmount != null && maxAmount != null && minAmount.compareTo(maxAmount) > 0) {
+            throw new BadRequestException("minAmount cannot be greater than maxAmount");
+        }
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new BadRequestException("from cannot be after to");
+        }
+        var pageable = PageRequest.of(page, Math.min(size, 100),
+                Sort.by(Sort.Direction.DESC, "transactionTime"));
+        var result = repository.findAll(
+                TransactionSpecifications.withFilters(search, minAmount, maxAmount, from, to), pageable);
+        return PageResponse.from(result, TransactionResponse::from);
     }
 }

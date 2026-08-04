@@ -7,6 +7,9 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -23,6 +26,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({BadRequestException.class, MethodArgumentNotValidException.class})
     ProblemDetail badRequest(Exception error) {
         return problem(HttpStatus.BAD_REQUEST, "Invalid request", "Please check the request values");
+    }
+
+    @ExceptionHandler({ConstraintViolationException.class, MethodArgumentTypeMismatchException.class,
+            HttpMessageNotReadableException.class})
+    ProblemDetail malformed(Exception error) {
+        return problem(HttpStatus.BAD_REQUEST, "Invalid request", "A request value has an invalid format");
     }
 
     private ProblemDetail problem(HttpStatus status, String title, String detail) {

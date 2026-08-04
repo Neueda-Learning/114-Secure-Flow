@@ -1,13 +1,14 @@
 package com.neueda.secureflow.alert;
 
 import com.neueda.secureflow.common.BadRequestException;
+import com.neueda.secureflow.common.PageResponse;
 import com.neueda.secureflow.common.ResourceNotFoundException;
 import com.neueda.secureflow.monitoring.RuleMatch;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,10 +32,11 @@ public class AlertService {
     }
 
     @Transactional(readOnly = true)
-    public List<AlertResponse> list(AlertStatus status) {
-        return repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")).stream()
-                .filter(alert -> status == null || alert.getStatus() == status)
-                .map(AlertResponse::from).toList();
+    public PageResponse<AlertResponse> list(AlertStatus status, AlertSeverity severity, int page, int size) {
+        var pageable = PageRequest.of(page, Math.min(size, 100),
+                Sort.by(Sort.Direction.DESC, "createdAt"));
+        var result = repository.findAll(AlertSpecifications.withFilters(status, severity), pageable);
+        return PageResponse.from(result, AlertResponse::from);
     }
 
     @Transactional(readOnly = true)
