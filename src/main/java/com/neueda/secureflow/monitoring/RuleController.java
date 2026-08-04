@@ -18,7 +18,8 @@ public class RuleController {
     public List<RuleDefinitionResponse> list() {
         return List.of(
                 new RuleDefinitionResponse("High amount", AlertSeverity.HIGH,
-                        "More than " + properties.amount().threshold() + " " + properties.amount().currency()),
+                        "More than ₹" + properties.amount().threshold().setScale(2).toPlainString()
+                                + " " + properties.amount().currency()),
                 new RuleDefinitionResponse("Velocity", AlertSeverity.HIGH,
                         "More than " + properties.velocity().maximumTransactions() + " in "
                                 + properties.velocity().windowMinutes() + " minutes"),

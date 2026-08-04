@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 class AmountRuleTest {
 
     private final AmountRule rule = new AmountRule(new MonitoringProperties(
-            new MonitoringProperties.Amount(true, new BigDecimal("10000.00"), "USD"),
+            new MonitoringProperties.Amount(true, new BigDecimal("10000.00"), "INR"),
             new MonitoringProperties.Velocity(true, 5, 10),
             new MonitoringProperties.NewPayee(true)
     ));

@@ -20,12 +20,12 @@ class NewPayeeRuleTest {
     }
 
     private MonitoringProperties properties() {
-        return new MonitoringProperties(new MonitoringProperties.Amount(true, new BigDecimal("10000"), "USD"),
+        return new MonitoringProperties(new MonitoringProperties.Amount(true, new BigDecimal("10000"), "INR"),
                 new MonitoringProperties.Velocity(true, 5, 10), new MonitoringProperties.NewPayee(true));
     }
 
     private TransactionEntity transaction() {
         Instant now = Instant.parse("2026-08-04T10:00:00Z");
-        return new TransactionEntity("ACC-1", "PAYEE-1", BigDecimal.TEN, "USD", now, null, now);
+        return new TransactionEntity("ACC-1", "PAYEE-1", BigDecimal.TEN, "INR", now, null, now);
     }
 }

@@ -17,7 +17,7 @@ class MonitoringPropertiesTest {
     void loadsTheThreeRuleConfigurations() {
         assertTrue(properties.amount().enabled());
         assertEquals(0, new BigDecimal("10000.00").compareTo(properties.amount().threshold()));
-        assertEquals("USD", properties.amount().currency());
+        assertEquals("INR", properties.amount().currency());
         assertTrue(properties.velocity().enabled());
         assertEquals(5, properties.velocity().maximumTransactions());
         assertEquals(10, properties.velocity().windowMinutes());

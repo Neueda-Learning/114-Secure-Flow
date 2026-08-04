@@ -50,7 +50,7 @@ class AlertServiceTest {
     private AlertEntity alert() {
         Instant now = Instant.parse("2026-08-04T10:00:00Z");
         TransactionEntity transaction = new TransactionEntity("ACC-1", "PAYEE-1", BigDecimal.TEN,
-                "USD", now, null, now);
+                "INR", now, null, now);
         RuleMatch match = new RuleMatch(RuleType.NEW_PAYEE, "New payee", AlertSeverity.MEDIUM,
                 "First payment", "ACC-1", List.of(transaction));
         return new AlertEntity(match, now);

@@ -84,6 +84,6 @@ class MonitoringIntegrationTest {
     private com.neueda.secureflow.transaction.TransactionCreatedResponse create(
             String account, String payee, String amount, Instant time) {
         return service.create(new CreateTransactionRequest(account, payee, new BigDecimal(amount),
-                "USD", time, "integration test"));
+                "INR", time, "integration test"));
     }
 }

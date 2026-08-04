@@ -44,7 +44,7 @@ Open:
 - Create and search transactions.
 - New-payee alert on the first account/payee payment.
 - Velocity alert on the sixth transaction in ten minutes.
-- Amount rule configuration at `10000.00` USD; SF-06 supplies the final amount checker.
+- Amount rule: payments strictly greater than ₹10,000.00 INR create a high-severity alert.
 - Alert flow: `OPEN -> ACKNOWLEDGED -> INVESTIGATING -> CLOSED`.
 - Close/dismiss requires resolution notes and every move is saved in history.
 - Summary cards, rule cards, responsive tables and friendly error states.
