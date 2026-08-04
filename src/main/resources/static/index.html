@@ -22,10 +22,10 @@
         <a class="button-link" href="#transaction-form">Add transaction</a>
     </section>
     <section class="summary-grid" aria-label="Dashboard summary">
-        <article class="summary-card danger"><span>Active alerts</span><strong>0</strong><small>Requires review</small></article>
-        <article class="summary-card"><span>Transactions today</span><strong>0</strong><small>Processed safely</small></article>
-        <article class="summary-card"><span>Alerts today</span><strong>0</strong><small>Across three rules</small></article>
-        <article class="summary-card"><span>Volume today</span><strong>$0.00</strong><small>USD monitored</small></article>
+        <article class="summary-card danger"><span>Active alerts</span><strong id="active-alert-count">0</strong><small>Requires review</small></article>
+        <article class="summary-card"><span>Transactions today</span><strong id="transaction-count">0</strong><small>Stored safely</small></article>
+        <article class="summary-card"><span>Alerts today</span><strong id="alert-count">0</strong><small>Across three rules</small></article>
+        <article class="summary-card"><span>Volume today</span><strong id="transaction-volume">$0.00</strong><small>USD monitored</small></article>
     </section>
     <section class="panel form-panel" id="transaction-form" aria-labelledby="transaction-form-title">
         <div class="panel-heading">
@@ -72,14 +72,61 @@
             <div><p class="eyebrow">LIVE QUEUE</p><h2>Active alerts</h2></div>
             <a href="#transactions">View transactions</a>
         </div>
+        <p id="dashboard-message" class="form-feedback" role="status" aria-live="polite"></p>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Alert</th><th>Severity</th><th>Status</th><th>Created</th></tr></thead>
-                <tbody><tr><td class="empty" colspan="4">No alerts yet. New alerts will appear here.</td></tr></tbody>
+                <thead><tr><th>Alert</th><th>Severity</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
+                <tbody id="alerts-body"><tr><td class="empty" colspan="5">Loading alerts...</td></tr></tbody>
             </table>
         </div>
     </section>
+    <section class="panel demo-panel" aria-labelledby="demo-title">
+        <div class="panel-heading">
+            <div><p class="eyebrow">ONE-CLICK DEMO</p><h2 id="demo-title">Trigger the real rules</h2></div>
+        </div>
+        <div class="demo-actions">
+            <button id="demo-high" type="button">High amount</button>
+            <button id="demo-new" type="button">New payee</button>
+            <button id="demo-velocity" type="button">Velocity burst</button>
+        </div>
+    </section>
+    <section class="panel" id="transactions">
+        <div class="panel-heading">
+            <div><p class="eyebrow">AUDIT TRAIL</p><h2>Transactions</h2></div>
+        </div>
+        <div class="filter-grid" aria-label="Transaction filters">
+            <label>Search<input id="transaction-search" type="search" placeholder="Account or payee"></label>
+            <label>Minimum amount<input id="min-amount" type="number" min="0" step="0.01"></label>
+            <label>Maximum amount<input id="max-amount" type="number" min="0" step="0.01"></label>
+            <label>From<input id="from-time" type="datetime-local"></label>
+            <label>To<input id="to-time" type="datetime-local"></label>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Account</th><th>Payee</th><th>Amount</th><th>Time</th></tr></thead>
+                <tbody id="transactions-body"><tr><td class="empty" colspan="4">Loading transactions...</td></tr></tbody>
+            </table>
+        </div>
+    </section>
+    <section class="panel">
+        <div class="panel-heading"><div><p class="eyebrow">COMPLETED WORK</p><h2>Alert history</h2></div></div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Alert</th><th>Severity</th><th>Status</th><th>Closed</th><th>Details</th></tr></thead>
+                <tbody id="alert-history-body"><tr><td class="empty" colspan="5">Loading history...</td></tr></tbody>
+            </table>
+        </div>
+    </section>
+    <section class="panel" id="alert-detail" aria-live="polite">
+        <div class="panel-heading"><div><p class="eyebrow">INVESTIGATION</p><h2>Alert details</h2></div></div>
+        <p class="empty">Choose <strong>View</strong> on an alert to see its transactions and timeline.</p>
+    </section>
+    <section class="panel">
+        <div class="panel-heading"><div><p class="eyebrow">CONFIGURATION</p><h2>Active rules</h2></div></div>
+        <div id="rules-grid" class="rules-grid"><p class="empty">Loading rules...</p></div>
+    </section>
 </main>
 <script src="/transaction-form.js" defer></script>
+<script src="/app.js" defer></script>
 </body>
 </html>

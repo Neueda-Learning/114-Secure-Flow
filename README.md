@@ -1,6 +1,8 @@
 # SecureFlow
 
-SecureFlow is a beginner-friendly transaction-monitoring application built with Java 21, Spring Boot, MySQL, HTML and CSS.
+SecureFlow is a beginner-friendly transaction-monitoring application built with Java 21, Spring Boot, MySQL, HTML, CSS and JavaScript.
+
+It saves transactions, checks monitoring rules immediately, creates alerts, and lets an operator move alerts through a simple investigation workflow.
 
 ## Simple team workflow
 
@@ -19,11 +21,11 @@ Rudra reviews teammate pull requests. Rushil reviews Rudra's pull requests. Nobo
 .\mvnw.cmd clean verify
 ```
 
-`BUILD SUCCESS` means the code compiled, the tests passed, coverage passed, and the runnable JAR was created in `target`.
+`BUILD SUCCESS` means the code compiled, tests passed, coverage passed, and the runnable JAR was created in `target`.
 
 ## Run the application
 
-Create a MySQL database called `secureflow`, then set the credentials and start Spring Boot:
+Create a MySQL database named `secureflow`, then run:
 
 ```powershell
 $env:DB_USERNAME="secureflow"
@@ -34,23 +36,53 @@ $env:DB_PASSWORD="your-password"
 Open:
 
 - Dashboard: http://localhost:8080
-- Health check: http://localhost:8080/actuator/health
+- Health: http://localhost:8080/actuator/health
 - Swagger: http://localhost:8080/swagger-ui.html
 
-## Important files
+## What works
 
-- `pom.xml` — dependencies, Java version, test and coverage setup.
-- `application.yml` — database settings and monitoring thresholds.
+- Create and search transactions.
+- New-payee alert on the first account/payee payment.
+- Velocity alert on the sixth transaction in ten minutes.
+- Amount rule configuration at `10000.00` USD; SF-06 supplies the final amount checker.
+- Alert flow: `OPEN -> ACKNOWLEDGED -> INVESTIGATING -> CLOSED`.
+- Close/dismiss requires resolution notes and every move is saved in history.
+- Summary cards, rule cards, responsive tables and friendly error states.
+- Flyway MySQL schema, Swagger, health check, tests, 70% coverage, JAR and Docker delivery.
+
+## Important files in simple words
+
+- `pom.xml` — libraries, Java version, tests and coverage.
+- `application.yml` — database connection and the three rule settings.
 - `V1__create_transactions_table.sql` — creates the transaction table.
-- `TransactionEntity.java` — maps a Java transaction to a database row.
-- `TransactionRepository.java` — provides database operations.
-- `MonitoringProperties.java` — reads the three rule settings.
-- `index.html` and `styles.css` — dashboard structure and appearance.
-- `.github/workflows/ci.yml` — automatically tests every pull request and builds `main`.
+- `V2__create_alert_tables.sql` — creates alert and history tables.
+- `TransactionController.java` — receives transaction API requests.
+- `TransactionService.java` — saves a transaction and starts monitoring.
+- `MonitoringRule.java` — the small contract each monitoring rule follows.
+- `NewPayeeRule.java` and `VelocityRule.java` — the two monitoring checks.
+- `AlertService.java` — creates alerts and controls legal status changes.
+- `AlertController.java` — exposes alert endpoints to the dashboard.
+- `index.html` — dashboard structure.
+- `styles.css` — colours, spacing and mobile layout.
+- `transaction-form.js` — validates and submits the form.
+- `app.js` — loads tables, cards and alert actions from the API.
+- `ci.yml` — tests pull requests and smoke-tests MySQL.
+- `release.yml` — publishes the Docker image from `main`.
+
+## How one transaction flows
+
+1. `TransactionController` receives JSON from the form.
+2. `TransactionService` saves a `TransactionEntity`.
+3. `MonitoringService` gives it to every `MonitoringRule`.
+4. A matching rule returns a `RuleMatch`.
+5. `AlertService` saves an alert and its first history entry.
+6. `app.js` reloads the data and updates the dashboard.
+
+See [architecture](docs/architecture.md) and the [demo script](docs/demo-script.md).
 
 ## CI/CD in one sentence
 
-GitHub Actions tests every pull request; after code reaches `main`, it tests again and publishes the runnable JAR as a downloadable artifact.
+GitHub Actions tests every pull request; after code reaches `main`, it tests again, smoke-tests MySQL, publishes the JAR artifact, and publishes a Docker image.
 
 ## Documentation
 
@@ -58,4 +90,4 @@ GitHub Actions tests every pull request; after code reaches `main`, it tests aga
 - User Stories: [docs/Requirements/User-Stories.md](docs/Requirements/User-Stories.md)
 - Architecture Documentation: [docs/Architecture/System-Architecture.md](docs/Architecture/System-Architecture.md)
 - Testing Strategy: [docs/Testing/Test-Strategy.md](docs/Testing/Test-Strategy.md)
-- GitHub Kanban Board: Refer to the team's GitHub Project board used for delivery tracking.
+- GitHub Kanban Board: refer to the team's GitHub Project board used for delivery tracking.
