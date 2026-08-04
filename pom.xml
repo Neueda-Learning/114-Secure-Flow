@@ -117,6 +117,8 @@
                             </rules>
                             <excludes>
                                 <exclude>**/*Application.class</exclude>
+                                <exclude>**/config/**</exclude>
+                                <exclude>**/dto/**</exclude>
                                 <exclude>**/*Entity.class</exclude>
                             </excludes>
                         </configuration>

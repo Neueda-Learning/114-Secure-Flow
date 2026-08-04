@@ -4,6 +4,7 @@
     const state = { alerts: [], transactions: [], rules: [], alertFilter: "ALL", pendingResolution: null };
     const activeStatuses = ["OPEN", "ACKNOWLEDGED", "INVESTIGATING"];
     const finalStatuses = ["CLOSED", "DISMISSED"];
+    const INDIA_TIME_ZONE = "Asia/Kolkata";
     const filterIds = ["transaction-search", "min-amount", "max-amount", "from-time", "to-time"];
     const transactionModal = document.getElementById("transaction-modal");
     const alertModal = document.getElementById("alert-modal");
@@ -19,8 +20,8 @@
     }).format(Number(value || 0));
 
     const formatDate = value => value ? new Intl.DateTimeFormat("en-IN", {
-        dateStyle: "medium", timeStyle: "short", timeZone: "UTC"
-    }).format(new Date(value)) + " UTC" : "—";
+        dateStyle: "medium", timeStyle: "short", timeZone: INDIA_TIME_ZONE
+    }).format(new Date(value)) + " IST" : "—";
 
     async function getJson(url, options) {
         const response = await fetch(url, options);
@@ -48,13 +49,6 @@
         item.textContent = text;
         region.appendChild(item);
         window.setTimeout(() => item.remove(), 4200);
-    }
-
-    function setDefaultTransactionTime() {
-        const input = document.getElementById("transactionTime");
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        input.value = now.toISOString().slice(0, 16);
     }
 
     function openDialog(dialog) {
@@ -123,11 +117,11 @@
     }
 
     function renderSummary(summary) {
-        document.getElementById("active-alert-count").textContent = summary.activeAlerts;
-        document.getElementById("transaction-count").textContent = summary.transactions;
-        document.getElementById("alert-count").textContent = summary.alerts;
-        document.getElementById("transaction-volume").textContent = formatMoney(summary.transactionVolume);
-        document.getElementById("nav-alert-count").textContent = summary.activeAlerts;
+        document.getElementById("active-alert-count").textContent = summary.activeAlertCount;
+        document.getElementById("transaction-count").textContent = summary.transactionCountToday;
+        document.getElementById("alert-count").textContent = summary.alertsToday;
+        document.getElementById("transaction-volume").textContent = formatMoney(summary.transactionVolumeToday);
+        document.getElementById("nav-alert-count").textContent = summary.activeAlertCount;
     }
 
     function renderAlerts() {
@@ -158,9 +152,19 @@
         document.getElementById("transaction-results").textContent = `${transactionPage.totalItems} transaction${transactionPage.totalItems === 1 ? "" : "s"} found`;
     }
 
+    function ruleSetting(rule) {
+        if (rule.type === "AMOUNT_THRESHOLD") {
+            return `More than ${formatMoney(rule.parameters?.threshold)}`;
+        }
+        if (rule.type === "VELOCITY") {
+            return `More than ${rule.parameters?.maximumTransactions} transactions in ${rule.parameters?.windowMinutes} minutes`;
+        }
+        return rule.description;
+    }
+
     function renderRules() {
-        document.getElementById("rules-preview").innerHTML = state.rules.map(rule => `<div class="preview-rule ${rule.severity.toLowerCase()}"><i></i><span><b>${escapeHtml(rule.name)}</b><small>${escapeHtml(rule.setting)}</small></span><em>ACTIVE</em></div>`).join("");
-        document.getElementById("rules-grid").innerHTML = state.rules.map((rule, index) => `<article class="rule-card ${rule.severity.toLowerCase()}"><div class="rule-number">0${index + 1}</div>${badge(rule.severity)}<h2>${escapeHtml(rule.name)}</h2><p>${escapeHtml(rule.setting)}</p><div class="rule-meta"><span>Evaluation: synchronous</span><b>● ACTIVE</b></div></article>`).join("");
+        document.getElementById("rules-preview").innerHTML = state.rules.map(rule => `<div class="preview-rule ${rule.severity.toLowerCase()}"><i></i><span><b>${escapeHtml(rule.name)}</b><small>${escapeHtml(ruleSetting(rule))}</small></span><em>ACTIVE</em></div>`).join("");
+        document.getElementById("rules-grid").innerHTML = state.rules.map((rule, index) => `<article class="rule-card ${rule.severity.toLowerCase()}"><div class="rule-number">0${index + 1}</div>${badge(rule.severity)}<h2>${escapeHtml(rule.name)}</h2><p>${escapeHtml(ruleSetting(rule))}</p><div class="rule-meta"><span>Evaluation: synchronous</span><b>● ACTIVE</b></div></article>`).join("");
     }
 
     async function loadDashboard() {
@@ -229,29 +233,6 @@
         document.getElementById("resolution-notes").focus();
     }
 
-    async function createDemoTransactions(kind, button) {
-        const stamp = Date.now();
-        const accountId = `DEMO-${kind.toUpperCase()}-${stamp}`;
-        const payeeId = `PAYEE-${kind.toUpperCase()}-${stamp}`;
-        const count = kind === "velocity" ? 6 : 1;
-        const amount = kind === "high" ? 15000 : 100;
-        button.disabled = true;
-        try {
-            for (let index = 0; index < count; index += 1) {
-                await getJson("/api/transactions", {
-                    method: "POST", headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({accountId, payeeId, amount, currency: "INR", transactionTime: new Date(Date.now() + index * 1000).toISOString(), description: `${kind} rule demonstration`})
-                });
-            }
-            toast(`${kind === "high" ? "High amount" : kind === "new" ? "New payee" : "Velocity"} demo completed through the real API.`);
-            await loadDashboard();
-        } catch (error) {
-            toast(`Demo failed. ${error.message}`, "error");
-        } finally {
-            button.disabled = false;
-        }
-    }
-
     async function loadHealth() {
         const symbol = document.getElementById("health-symbol");
         try {
@@ -277,7 +258,6 @@
             return;
         }
         if (event.target.closest("[data-open-transaction]")) {
-            setDefaultTransactionTime();
             openDialog(transactionModal);
             document.getElementById("accountId").focus();
             return;
@@ -321,9 +301,6 @@
         filterIds.forEach(id => { document.getElementById(id).value = ""; });
         loadDashboard();
     });
-    document.getElementById("demo-high").addEventListener("click", event => createDemoTransactions("high", event.currentTarget));
-    document.getElementById("demo-new").addEventListener("click", event => createDemoTransactions("new", event.currentTarget));
-    document.getElementById("demo-velocity").addEventListener("click", event => createDemoTransactions("velocity", event.currentTarget));
     document.getElementById("menu-button").addEventListener("click", event => {
         const open = document.getElementById("sidebar").classList.toggle("open");
         document.getElementById("sidebar-scrim").classList.toggle("show", open);
@@ -339,9 +316,15 @@
         await loadDashboard();
     });
 
-    document.getElementById("today-label").textContent = new Intl.DateTimeFormat("en-IN", {dateStyle: "long", timeZone: "UTC"}).format(new Date()) + " · UTC";
+    const liveClock = new Intl.DateTimeFormat("en-IN", {
+        dateStyle: "long", timeStyle: "medium", timeZone: INDIA_TIME_ZONE
+    });
+    const updateLiveClock = () => {
+        document.getElementById("today-label").textContent = liveClock.format(new Date()) + " · IST";
+    };
+    updateLiveClock();
+    window.setInterval(updateLiveClock, 1000);
     const initialView = location.hash.slice(1);
     if (document.querySelector(`[data-view-panel="${initialView}"]`)) showView(initialView);
-    setDefaultTransactionTime();
     loadDashboard();
 })();

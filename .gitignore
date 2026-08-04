@@ -4,5 +4,15 @@ target/
 *.iml
 *.log
 .env
+.env.*
+!.env.example
+.secrets/
+secrets/
+backups/
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
 application-local.yml
 .DS_Store

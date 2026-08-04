@@ -9,12 +9,7 @@ public record MonitoringProperties(
         Velocity velocity,
         NewPayee newPayee
 ) {
-    public record Amount(boolean enabled, BigDecimal threshold, String currency) {
-    }
-
-    public record Velocity(boolean enabled, int maximumTransactions, int windowMinutes) {
-    }
-
-    public record NewPayee(boolean enabled) {
-    }
+    public record Amount(boolean enabled, BigDecimal threshold, String currency) {}
+    public record Velocity(boolean enabled, int maximumTransactions, int windowMinutes) {}
+    public record NewPayee(boolean enabled) {}
 }

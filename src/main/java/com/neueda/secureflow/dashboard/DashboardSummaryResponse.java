@@ -2,6 +2,9 @@ package com.neueda.secureflow.dashboard;
 
 import java.math.BigDecimal;
 
-public record DashboardSummaryResponse(long activeAlerts, long transactions,
-                                       long alerts, BigDecimal transactionVolume) {
-}
+public record DashboardSummaryResponse(
+        long activeAlertCount,
+        long transactionCountToday,
+        long alertsToday,
+        BigDecimal transactionVolumeToday
+) {}

@@ -1,64 +1,78 @@
 package com.neueda.secureflow.alert;
 
+import com.neueda.secureflow.alert.dto.AlertDetailResponse;
+import com.neueda.secureflow.alert.dto.AlertSummaryResponse;
 import com.neueda.secureflow.common.BadRequestException;
 import com.neueda.secureflow.common.PageResponse;
 import com.neueda.secureflow.common.ResourceNotFoundException;
 import com.neueda.secureflow.monitoring.RuleMatch;
+import java.time.Clock;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class AlertService {
-    private static final Map<AlertStatus, Set<AlertStatus>> ALLOWED = Map.of(
+    private static final Map<AlertStatus, Set<AlertStatus>> ALLOWED_TRANSITIONS = Map.of(
             AlertStatus.OPEN, Set.of(AlertStatus.ACKNOWLEDGED),
             AlertStatus.ACKNOWLEDGED, Set.of(AlertStatus.INVESTIGATING, AlertStatus.DISMISSED),
             AlertStatus.INVESTIGATING, Set.of(AlertStatus.CLOSED, AlertStatus.DISMISSED),
-            AlertStatus.CLOSED, Set.of(), AlertStatus.DISMISSED, Set.of());
+            AlertStatus.CLOSED, Set.of(),
+            AlertStatus.DISMISSED, Set.of()
+    );
 
     private final AlertRepository repository;
+    private final Clock clock;
 
+    @Autowired
     public AlertService(AlertRepository repository) {
+        this(repository, Clock.systemUTC());
+    }
+
+    AlertService(AlertRepository repository, Clock clock) {
         this.repository = repository;
+        this.clock = clock;
     }
 
     @Transactional
     public AlertEntity create(RuleMatch match) {
-        return repository.save(new AlertEntity(match, Instant.now()));
+        return repository.save(new AlertEntity(match.ruleType(), match.ruleName(), match.severity(),
+                match.message(), match.accountId(), clock.instant(), match.transactions()));
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<AlertResponse> list(AlertStatus status, AlertSeverity severity, int page, int size) {
-        var pageable = PageRequest.of(page, Math.min(size, 100),
-                Sort.by(Sort.Direction.DESC, "createdAt"));
+    public PageResponse<AlertSummaryResponse> search(AlertStatus status, AlertSeverity severity, int page, int size) {
+        var pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(Sort.Direction.DESC, "createdAt"));
         var result = repository.findAll(AlertSpecifications.withFilters(status, severity), pageable);
-        return PageResponse.from(result, AlertResponse::from);
+        return PageResponse.from(result, AlertMapper::toSummary);
     }
 
     @Transactional(readOnly = true)
-    public AlertResponse get(long id) {
-        return AlertResponse.from(find(id));
+    public AlertDetailResponse get(long id) {
+        return AlertMapper.toDetail(find(id));
     }
 
     @Transactional
-    public AlertResponse transition(long id, AlertStatus next, String resolutionNotes) {
+    public AlertDetailResponse transition(long id, AlertStatus target, String resolutionNotes) {
         AlertEntity alert = find(id);
-        if (!ALLOWED.get(alert.getStatus()).contains(next)) {
+        if (!ALLOWED_TRANSITIONS.get(alert.getStatus()).contains(target)) {
             throw new InvalidAlertTransitionException(
-                    "Cannot move alert from " + alert.getStatus() + " to " + next);
+                    "Cannot move alert from " + alert.getStatus() + " to " + target);
         }
+
         String notes = resolutionNotes == null ? null : resolutionNotes.trim();
-        if ((next == AlertStatus.CLOSED || next == AlertStatus.DISMISSED)
+        if ((target == AlertStatus.CLOSED || target == AlertStatus.DISMISSED)
                 && (notes == null || notes.length() < 3)) {
-            throw new BadRequestException("Resolution notes are required");
+            throw new BadRequestException("Resolution notes of at least 3 characters are required");
         }
-        alert.transition(next, Instant.now(), notes);
-        return AlertResponse.from(repository.save(alert));
+
+        alert.transitionTo(target, clock.instant(), notes);
+        return AlertMapper.toDetail(repository.save(alert));
     }
 
     private AlertEntity find(long id) {

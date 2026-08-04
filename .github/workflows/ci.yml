@@ -1,10 +1,10 @@
-name: CI/CD
+name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [qa, main]
   push:
-    branches: [main]
+    branches: [qa, main]
 
 permissions:
   contents: read
@@ -14,19 +14,20 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:8.4
+        image: mysql:8.4.11
         env:
           MYSQL_DATABASE: secureflow
           MYSQL_USER: secureflow
-          MYSQL_PASSWORD: secureflow
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_PASSWORD: secureflow-ci
+          MYSQL_ROOT_PASSWORD: root-ci-only
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h localhost"
+          --health-cmd="mysql --protocol=TCP -h localhost -uroot -proot-ci-only -e 'SELECT 1' --silent"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -41,34 +42,61 @@ jobs:
       - name: Make Maven Wrapper executable
         run: chmod +x mvnw
 
-      - name: Run tests, check coverage, and build JAR
+      - name: Test, enforce coverage, and package
         run: ./mvnw --batch-mode clean verify
 
-      - name: Smoke-test the packaged application
+      - name: Smoke-test packaged app with MySQL and Flyway
         env:
-          DB_URL: jdbc:mysql://localhost:3306/secureflow?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+          DB_URL: jdbc:mysql://127.0.0.1:3306/secureflow?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
           DB_USERNAME: secureflow
-          DB_PASSWORD: secureflow
+          DB_PASSWORD: secureflow-ci
         run: |
-          java -jar target/secureflow-*.jar > application.log 2>&1 &
+          java -jar target/secureflow-*.jar > target/smoke-test.log 2>&1 &
           APP_PID=$!
           for attempt in {1..45}; do
             if curl --fail --silent http://localhost:8080/actuator/health > /dev/null; then
               kill "$APP_PID"
+              wait "$APP_PID" || true
               exit 0
             fi
             sleep 2
           done
-          cat application.log
+          cat target/smoke-test.log
           kill "$APP_PID" || true
+          wait "$APP_PID" || true
           exit 1
 
-      - name: Validate Linux Docker deployment
+      - name: Start and smoke-test the full Linux Docker deployment
         env:
-          DB_PASSWORD: compose-validation-only
+          SECUREFLOW_DB_PASSWORD: compose-validation-only-password
+          SECUREFLOW_DB_ROOT_PASSWORD: compose-root-validation-only-password
+          SECUREFLOW_BIND_ADDRESS: 127.0.0.1
+          SECUREFLOW_PORT: 8080
         run: |
+          trap 'docker compose ps; docker compose logs --tail=120' ERR
           docker compose config --quiet
-          docker build --tag secureflow:ci .
+          docker compose up --detach --build --wait --wait-timeout 300
+          curl --fail --silent --show-error --connect-timeout 5 --max-time 15 \
+            http://localhost:8080/actuator/health
+          curl --fail --silent --show-error --connect-timeout 5 --max-time 15 \
+            http://localhost:8080/api/dashboard/summary
+          transaction_response="$(curl --fail --silent --show-error \
+            --connect-timeout 5 --max-time 15 \
+            --request POST \
+            --header 'Content-Type: application/json' \
+            --data '{"accountId":"CI-COMPOSE-001","payeeId":"CI-PAYEE-001","amount":15000,"currency":"INR","description":"Compose MySQL persistence test"}' \
+            http://localhost:8080/api/transactions)"
+          grep -q '"transaction"' <<< "$transaction_response"
+          grep -Eq '"generatedAlerts":\[\{' <<< "$transaction_response"
+
+      - name: Stop Docker deployment
+        if: always()
+        env:
+          SECUREFLOW_DB_PASSWORD: compose-validation-only-password
+          SECUREFLOW_DB_ROOT_PASSWORD: compose-root-validation-only-password
+          SECUREFLOW_BIND_ADDRESS: 127.0.0.1
+          SECUREFLOW_PORT: 8080
+        run: docker compose down --volumes --remove-orphans
 
       - name: Upload runnable JAR
         uses: actions/upload-artifact@v4
@@ -77,7 +105,7 @@ jobs:
           path: target/secureflow-*.jar
           if-no-files-found: error
 
-      - name: Upload test coverage report
+      - name: Upload coverage report
         uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -1,155 +1,242 @@
 # SecureFlow
 
-[![CI](https://github.com/Neueda-Learning/114-Secure-Flow/actions/workflows/ci.yml/badge.svg)](https://github.com/Neueda-Learning/114-Secure-Flow/actions/workflows/ci.yml)
+SecureFlow is a complete, runnable transaction-monitoring application. It stores
+transactions, evaluates three transparent monitoring rules immediately, creates
+alerts, and records each alert status change in an audit trail.
 
-SecureFlow is a transaction-monitoring and fraud-alert dashboard built with
-Java 21, Spring Boot, MySQL, and plain HTML/CSS/JavaScript. It records payments,
-evaluates transparent monitoring rules synchronously, creates investigation
-alerts, and preserves every alert status change in an audit trail.
+The Linux deployment runs the real Spring Boot application and a real,
+persistent MySQL database. H2, Mockito, and other test tools are not included in
+the production container. The product starts with an empty database: it does not
+insert sample transactions, sample alerts, or fixed dates.
 
-## Features
+## Tomorrow: the easiest setup for every friend
 
-- Create, search, filter, and paginate INR transactions.
-- Raise a high-severity alert for amounts strictly above ₹10,000.
-- Raise a high-severity velocity alert on the sixth transaction in ten minutes.
-- Raise a medium-severity alert for the first payment to an account/payee pair.
-- Move alerts through `OPEN → ACKNOWLEDGED → INVESTIGATING → CLOSED` or dismiss
-  them from acknowledged/investigating states.
-- Require resolution notes for terminal states and retain status history.
-- Display live summary cards, transactions, alerts, rules, and responsive forms.
-- Expose a documented REST API, application health endpoint, and Swagger UI.
-- Apply the MySQL schema automatically with Flyway.
-- Build, test, package, and publish a container through GitHub Actions.
-- Deploy the application and MySQL together on a Linux VM with Docker Compose.
-
-## Architecture
-
-```mermaid
-flowchart LR
-    Browser["Operator dashboard"] -->|HTTP/JSON| App["Spring Boot application"]
-    App --> Transactions["Transaction service"]
-    Transactions --> Rules["Monitoring rules"]
-    Rules --> Alerts["Alert workflow"]
-    Transactions --> DB[("MySQL 8.4")]
-    Alerts --> DB
-```
-
-The browser assets and REST API are delivered by one Spring Boot application.
-Transactions are saved and evaluated in the same service operation. Matching
-rules create alerts linked to their triggering transactions. See the
-[architecture documentation](docs/Architecture/System-Architecture.md) for the
-component, database, and deployment views.
-
-## Quick start with Docker
-
-Prerequisites: Docker Engine and the Docker Compose plugin.
+Each person opens **Ubuntu**, then copies these commands one at a time:
 
 ```bash
-git clone https://github.com/Neueda-Learning/114-Secure-Flow.git
-cd 114-Secure-Flow
+sudo apt-get update && sudo apt-get install -y git
+git clone https://github.com/Neueda-Learning/114-Secure-Flow.git SecureFlow
+cd SecureFlow
+bash setup-ubuntu-docker.sh
 bash deploy-linux.sh
 ```
 
-The script creates a private `.env` with a random database password, builds the
-application, starts MySQL, applies Flyway migrations, and waits for both health
-checks. Open:
+The setup script installs Docker only when it is missing. If it asks for a
+password, enter the Ubuntu password; typed password characters are intentionally
+invisible. If it asks you to reopen Ubuntu, do that, return to the project with
+`cd ~/SecureFlow`, and run `bash deploy-linux.sh` again.
 
-- Dashboard: <http://localhost:8080>
-- Health: <http://localhost:8080/actuator/health>
-- Swagger UI: <http://localhost:8080/swagger-ui.html>
+When the script prints **SecureFlow is healthy**, open
+[http://localhost:8080](http://localhost:8080). No Java, Maven, MySQL, or Node.js
+installation is needed because Docker supplies the production runtime.
 
-Data is retained in the `secureflow_mysql-data` Docker volume across container
-restarts. See the [Linux VM runbook](docs/linux-deployment.md) before deploying
-to the presentation VM.
+## How the live data works (beginner version)
 
-## Local development
+1. You enter a real account, payee, and INR amount in the browser.
+2. JavaScript sends that information as JSON to `POST /api/transactions`.
+3. Spring Boot adds the server's current time; the browser cannot invent it.
+4. Spring Boot saves the transaction in MySQL and runs all three rules.
+5. Any matching alerts are saved in the same MySQL database.
+6. The dashboard reads the saved rows through the API and shows times in IST.
 
-Install Java 21 and MySQL 8.4. Create a `secureflow` database and user, then set
-credentials for the current terminal.
+MySQL stores instants in UTC because that is safe and unambiguous. The screen
+converts them to Indian Standard Time, and “Today” means midnight-to-midnight in
+`Asia/Kolkata`. Data remains after `docker compose down`; only the intentionally
+destructive `bash reset-linux.sh` command deletes it.
 
-Windows PowerShell:
+## What the product does
 
-```powershell
-$env:DB_USERNAME='secureflow'
-$env:DB_PASSWORD='your-local-password'
-.\mvnw.cmd clean verify
-.\mvnw.cmd spring-boot:run
-```
+- Records and searches INR transactions.
+- Uses the server's real current time for every transaction, displays it in IST,
+  and calculates dashboard totals using the current Indian calendar day.
+- Raises a **HIGH** alert above `₹10,000.00`.
+- Raises a **HIGH** alert when an account records more than five transactions in
+  ten minutes.
+- Raises a **MEDIUM** alert the first time an account uses a payee.
+- Supports `OPEN → ACKNOWLEDGED → INVESTIGATING → CLOSED` and dismissal from
+  acknowledged or investigating states.
+- Shows summary cards, transactions, alerts, rule configuration, linked
+  transactions, and alert history in a responsive dashboard.
+- Documents the REST API with Swagger UI.
 
-Linux/macOS:
+## Run the full product on Linux
+
+SecureFlow has two containers: the application and MySQL. Therefore the correct
+beginner command is Docker Compose, wrapped by one setup script, rather than a
+single raw `docker run` command.
+
+You need only:
+
+- Ubuntu Linux (a normal Linux machine, VM, or Ubuntu under WSL 2)
+- Docker Engine with the Docker Compose plugin
+- Internet access for the first image build
+- At least 2 GB RAM available to Linux and 10 GB free disk space; use at least
+  8 GB total RAM on a Windows presentation laptop
+
+You do **not** need to install Java, Maven, Node.js, or MySQL on the host.
+
+From the project directory in Ubuntu:
 
 ```bash
-export DB_USERNAME=secureflow
-export DB_PASSWORD=your-local-password
-./mvnw clean verify
-./mvnw spring-boot:run
+# Only needed once on a fresh Ubuntu installation
+bash setup-ubuntu-docker.sh
+
+# Builds, starts, waits for health, and verifies the complete product
+bash deploy-linux.sh
 ```
 
-Maven itself does not need to be installed because the repository includes the
-Maven Wrapper.
+Then open these URLs. When Ubuntu runs under WSL, open them in the Windows
+browser:
 
-## REST API
+- Dashboard: [http://localhost:8080](http://localhost:8080)
+- Swagger UI: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- Health: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
+
+The first run can take several minutes because Docker downloads the Java and
+MySQL images. Later runs reuse the cache and are much faster.
+
+## Put Ubuntu on a Windows presentation laptop
+
+Open **PowerShell as Administrator** once:
+
+```powershell
+wsl --install -d Ubuntu
+wsl --update
+```
+
+Restart Windows if requested, open **Ubuntu** from the Start menu, and create the
+Linux username and password it asks for. Then place the repository in Ubuntu's
+Linux filesystem for faster, more reliable Docker builds:
+
+Confirm `wsl --list --verbose` shows Ubuntu at version `2`. If it shows version
+`1`, run `wsl --set-version Ubuntu 2` in PowerShell before continuing.
+
+```bash
+mkdir -p ~/projects
+# Replace YOUR_WINDOWS_USERNAME before running these lines.
+windows_source="/mnt/c/Users/YOUR_WINDOWS_USERNAME/Desktop/SecureFlow"
+test -d "$windows_source" || { echo "SecureFlow folder not found"; false; }
+test ! -e ~/projects/SecureFlow || { echo "~/projects/SecureFlow already exists"; false; }
+cp -a "$windows_source" ~/projects/SecureFlow
+cd ~/projects/SecureFlow
+bash setup-ubuntu-docker.sh
+bash deploy-linux.sh
+```
+
+If the final project is already pushed to GitHub, clone it directly instead of
+copying it:
+
+```bash
+mkdir -p ~/projects && cd ~/projects
+sudo apt-get update && sudo apt-get install -y git
+git clone https://github.com/Neueda-Learning/114-Secure-Flow.git SecureFlow
+cd SecureFlow
+bash setup-ubuntu-docker.sh
+bash deploy-linux.sh
+```
+
+See [the Linux deployment guide](docs/linux-deployment.md) for the exact WSL
+setup, remote-VM option, backup, update, reset, and troubleshooting steps.
+
+## Live presentation sequence
+
+Install Ubuntu and Docker and run the deployment once **before** presentation
+day. This removes restart, large download, and weak-network risks. Stop it with
+`docker compose down`; that keeps both the image cache and database data.
+
+In front of the presenter:
+
+```bash
+cd ~/projects/SecureFlow
+uname -a
+docker --version
+docker compose version
+bash deploy-linux.sh
+docker compose ps
+curl -fsS http://localhost:8080/actuator/health
+```
+
+The two services should show `healthy`, and the health response should contain
+`"status":"UP"`. To prove that it is a real MySQL deployment:
+
+```bash
+docker compose exec -T db sh -c \
+  'mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -e "SHOW TABLES;"'
+```
+
+Open the dashboard, create a transaction, and review its alert. If asked to
+prove persistence, run `docker compose down`, run `bash deploy-linux.sh` again,
+and show that the transaction is still present.
+
+## Data and credentials
+
+On the first run, `deploy-linux.sh` creates a private `.env` file containing two
+random database passwords. MySQL data is stored in the named Docker volume
+`secureflow_mysql-data`.
+
+Keep `.env` and that volume together. Do not delete `.env` or change its
+passwords while retaining the volume; MySQL initializes its users only when the
+volume is first created. The script detects a missing `.env` beside an existing
+volume and stops instead of silently locking the app out of its data.
+
+Useful commands:
+
+```bash
+# Status
+docker compose ps
+
+# Follow application logs
+docker compose logs --follow app
+
+# Stop without deleting data
+docker compose down
+
+# Start or rebuild again
+bash deploy-linux.sh
+
+# Permanent clean reset; asks you to type RESET
+bash reset-linux.sh
+```
+
+## Security boundary
+
+The default deployment binds to `127.0.0.1`, so only the presentation computer
+can reach it. SecureFlow currently has no authentication or TLS termination; do
+not expose port 8080 directly to the public internet. A controlled remote VM can
+bind to `0.0.0.0` only when its firewall restricts access to the presenter or
+trusted network. Public operation also requires authentication and HTTPS in
+front of the application.
+
+## Main API
 
 | Method | Route | Purpose |
 |---|---|---|
-| `POST` | `/api/transactions` | Store and evaluate a transaction |
-| `GET` | `/api/transactions` | Search/filter/paginate transactions |
+| `POST` | `/api/transactions` | Store and evaluate one transaction |
+| `GET` | `/api/transactions` | Search, filter, and paginate transactions |
 | `GET` | `/api/alerts` | Filter and paginate alerts |
-| `GET` | `/api/alerts/{id}` | Read alert details, linked transactions, and history |
-| `PATCH` | `/api/alerts/{id}/status` | Perform a valid alert status transition |
-| `GET` | `/api/rules` | Read the effective monitoring-rule configuration |
-| `GET` | `/api/dashboard/summary` | Read current UTC-day dashboard totals |
-| `GET` | `/actuator/health` | Read application and database health |
+| `GET` | `/api/alerts/{id}` | Get an alert, linked transactions, and history |
+| `PATCH` | `/api/alerts/{id}/status` | Perform one valid status transition |
+| `GET` | `/api/rules` | Read the three effective rule configurations |
+| `GET` | `/api/dashboard/summary` | Get dashboard totals for the current Indian day |
 
-Ready-to-run requests are in [docs/api-examples.http](docs/api-examples.http).
+Request examples are in [docs/api-examples.http](docs/api-examples.http).
 
-## Quality and delivery
+## Developer verification
 
-Run the complete local quality gate:
+Docker is the recommended way to run the product. Developers who already have
+Java 21 can run the same quality gate as CI:
 
 ```bash
 ./mvnw clean verify
 ```
 
-The build compiles the application, runs automated tests, enforces at least 70%
-line coverage for non-trivial backend code, produces a JaCoCo HTML report at
-`target/site/jacoco/index.html`, and packages a runnable JAR.
+The suite currently contains 25 tests and enforces at least 70% line coverage
+for non-trivial backend code. The JaCoCo report is written to
+`target/site/jacoco/index.html`.
 
-GitHub Actions performs the same verification, smoke-tests the JAR against
-MySQL, validates the Compose model, and builds the Docker image. Merges to
-`main` also publish the JAR artifact and tagged container images to GitHub
-Container Registry.
+More detail:
 
-## Project layout
-
-```text
-src/main/java/          Spring controllers, services, rules, repositories
-src/main/resources/     Runtime configuration, Flyway SQL, dashboard assets
-src/test/               Unit, MVC, persistence, and integration tests
-docs/                   Requirements, architecture, testing, API, demo, runbooks
-.github/workflows/       Continuous integration and container delivery
-Dockerfile               Reproducible multi-stage application image
-compose.yaml             Application + persistent MySQL deployment
-deploy-linux.sh          One-command Linux VM deployment
-```
-
-## Documentation index
-
-- [Business meeting minutes](docs/MoM/MoM-001-Business-Requirements.md)
-- [User stories and acceptance criteria](docs/Requirements/User-Stories.md)
-- [System architecture](docs/Architecture/System-Architecture.md)
-- [Engineering decisions](docs/architecture.md)
-- [Testing strategy](docs/Testing/Test-Strategy.md)
+- [Architecture](docs/architecture.md)
+- [Linux/WSL deployment](docs/linux-deployment.md)
 - [API examples](docs/api-examples.http)
-- [Linux VM deployment](docs/linux-deployment.md)
-- [Five-minute demonstration](docs/demo-script.md)
-- [Presentation checklist](docs/presentation-checklist.md)
-- [Contribution workflow](CONTRIBUTING.md)
-- [Security scope](SECURITY.md)
-
-## Scope and security
-
-SecureFlow is a classroom/demo MVP. It deliberately has no authentication,
-authorization, encryption termination, editable rule administration, message
-queue, or machine-learning model. Restrict VM port `8080` to the presentation
-network or your own IP and do not use real financial or personal data.
+- [Contributing workflow](CONTRIBUTING.md)
