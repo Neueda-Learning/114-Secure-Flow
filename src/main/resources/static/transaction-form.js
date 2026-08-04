@@ -90,6 +90,7 @@
 
             form.reset();
             showFeedback("Transaction submitted successfully.", "success");
+            window.dispatchEvent(new CustomEvent("secureflow:refresh"));
         } catch (_error) {
             showFeedback("Unable to submit transaction right now. Please try again.", "error");
         } finally {
