@@ -1,3 +1,13 @@
-target/site
-target/surefire-reports
 .git
+.github
+.idea
+.vscode
+target
+*.iml
+*.log
+.env
+application-local.yml
+docs
+README.md
+CONTRIBUTING.md
+MOM.md

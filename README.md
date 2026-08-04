@@ -1,93 +1,155 @@
 # SecureFlow
 
-SecureFlow is a beginner-friendly transaction-monitoring application built with Java 21, Spring Boot, MySQL, HTML, CSS and JavaScript.
+[![CI](https://github.com/Neueda-Learning/114-Secure-Flow/actions/workflows/ci.yml/badge.svg)](https://github.com/Neueda-Learning/114-Secure-Flow/actions/workflows/ci.yml)
 
-It saves transactions, checks monitoring rules immediately, creates alerts, and lets an operator move alerts through a simple investigation workflow.
+SecureFlow is a transaction-monitoring and fraud-alert dashboard built with
+Java 21, Spring Boot, MySQL, and plain HTML/CSS/JavaScript. It records payments,
+evaluates transparent monitoring rules synchronously, creates investigation
+alerts, and preserves every alert status change in an audit trail.
 
-## Simple team workflow
+## Features
 
-1. Start from `main`: `git checkout main` then `git pull origin main`.
-2. Create one feature branch: `git checkout -b feature/SF-XX-short-name`.
-3. Make one small change and add a test.
-4. Run `mvnw.cmd clean verify` on Windows.
-5. Commit, push, and open a pull request into `main`.
-6. Another teammate reviews it. Merge only when CI is green.
+- Create, search, filter, and paginate INR transactions.
+- Raise a high-severity alert for amounts strictly above ₹10,000.
+- Raise a high-severity velocity alert on the sixth transaction in ten minutes.
+- Raise a medium-severity alert for the first payment to an account/payee pair.
+- Move alerts through `OPEN → ACKNOWLEDGED → INVESTIGATING → CLOSED` or dismiss
+  them from acknowledged/investigating states.
+- Require resolution notes for terminal states and retain status history.
+- Display live summary cards, transactions, alerts, rules, and responsive forms.
+- Expose a documented REST API, application health endpoint, and Swagger UI.
+- Apply the MySQL schema automatically with Flyway.
+- Build, test, package, and publish a container through GitHub Actions.
+- Deploy the application and MySQL together on a Linux VM with Docker Compose.
 
-Rudra reviews teammate pull requests. Rushil reviews Rudra's pull requests. Nobody merges their own pull request.
+## Architecture
 
-## Run the tests
-
-```powershell
-.\mvnw.cmd clean verify
+```mermaid
+flowchart LR
+    Browser["Operator dashboard"] -->|HTTP/JSON| App["Spring Boot application"]
+    App --> Transactions["Transaction service"]
+    Transactions --> Rules["Monitoring rules"]
+    Rules --> Alerts["Alert workflow"]
+    Transactions --> DB[("MySQL 8.4")]
+    Alerts --> DB
 ```
 
-`BUILD SUCCESS` means the code compiled, tests passed, coverage passed, and the runnable JAR was created in `target`.
+The browser assets and REST API are delivered by one Spring Boot application.
+Transactions are saved and evaluated in the same service operation. Matching
+rules create alerts linked to their triggering transactions. See the
+[architecture documentation](docs/Architecture/System-Architecture.md) for the
+component, database, and deployment views.
 
-## Run the application
+## Quick start with Docker
 
-Create a MySQL database named `secureflow`, then run:
+Prerequisites: Docker Engine and the Docker Compose plugin.
+
+```bash
+git clone https://github.com/Neueda-Learning/114-Secure-Flow.git
+cd 114-Secure-Flow
+bash deploy-linux.sh
+```
+
+The script creates a private `.env` with a random database password, builds the
+application, starts MySQL, applies Flyway migrations, and waits for both health
+checks. Open:
+
+- Dashboard: <http://localhost:8080>
+- Health: <http://localhost:8080/actuator/health>
+- Swagger UI: <http://localhost:8080/swagger-ui.html>
+
+Data is retained in the `secureflow_mysql-data` Docker volume across container
+restarts. See the [Linux VM runbook](docs/linux-deployment.md) before deploying
+to the presentation VM.
+
+## Local development
+
+Install Java 21 and MySQL 8.4. Create a `secureflow` database and user, then set
+credentials for the current terminal.
+
+Windows PowerShell:
 
 ```powershell
-$env:DB_USERNAME="secureflow"
-$env:DB_PASSWORD="your-password"
+$env:DB_USERNAME='secureflow'
+$env:DB_PASSWORD='your-local-password'
+.\mvnw.cmd clean verify
 .\mvnw.cmd spring-boot:run
 ```
 
-Open:
+Linux/macOS:
 
-- Dashboard: http://localhost:8080
-- Health: http://localhost:8080/actuator/health
-- Swagger: http://localhost:8080/swagger-ui.html
+```bash
+export DB_USERNAME=secureflow
+export DB_PASSWORD=your-local-password
+./mvnw clean verify
+./mvnw spring-boot:run
+```
 
-## What works
+Maven itself does not need to be installed because the repository includes the
+Maven Wrapper.
 
-- Create and search transactions.
-- New-payee alert on the first account/payee payment.
-- Velocity alert on the sixth transaction in ten minutes.
-- Amount rule: payments strictly greater than ₹10,000.00 INR create a high-severity alert.
-- Alert flow: `OPEN -> ACKNOWLEDGED -> INVESTIGATING -> CLOSED`.
-- Close/dismiss requires resolution notes and every move is saved in history.
-- Summary cards, rule cards, responsive tables and friendly error states.
-- Flyway MySQL schema, Swagger, health check, tests, 70% coverage, JAR and Docker delivery.
+## REST API
 
-## Important files in simple words
+| Method | Route | Purpose |
+|---|---|---|
+| `POST` | `/api/transactions` | Store and evaluate a transaction |
+| `GET` | `/api/transactions` | Search/filter/paginate transactions |
+| `GET` | `/api/alerts` | Filter and paginate alerts |
+| `GET` | `/api/alerts/{id}` | Read alert details, linked transactions, and history |
+| `PATCH` | `/api/alerts/{id}/status` | Perform a valid alert status transition |
+| `GET` | `/api/rules` | Read the effective monitoring-rule configuration |
+| `GET` | `/api/dashboard/summary` | Read current UTC-day dashboard totals |
+| `GET` | `/actuator/health` | Read application and database health |
 
-- `pom.xml` — libraries, Java version, tests and coverage.
-- `application.yml` — database connection and the three rule settings.
-- `V1__create_transactions_table.sql` — creates the transaction table.
-- `V2__create_alert_tables.sql` — creates alert and history tables.
-- `TransactionController.java` — receives transaction API requests.
-- `TransactionService.java` — saves a transaction and starts monitoring.
-- `MonitoringRule.java` — the small contract each monitoring rule follows.
-- `NewPayeeRule.java` and `VelocityRule.java` — the two monitoring checks.
-- `AlertService.java` — creates alerts and controls legal status changes.
-- `AlertController.java` — exposes alert endpoints to the dashboard.
-- `index.html` — dashboard structure.
-- `styles.css` — colours, spacing and mobile layout.
-- `transaction-form.js` — validates and submits the form.
-- `app.js` — loads tables, cards and alert actions from the API.
-- `ci.yml` — tests pull requests and smoke-tests MySQL.
-- `release.yml` — publishes the Docker image from `main`.
+Ready-to-run requests are in [docs/api-examples.http](docs/api-examples.http).
 
-## How one transaction flows
+## Quality and delivery
 
-1. `TransactionController` receives JSON from the form.
-2. `TransactionService` saves a `TransactionEntity`.
-3. `MonitoringService` gives it to every `MonitoringRule`.
-4. A matching rule returns a `RuleMatch`.
-5. `AlertService` saves an alert and its first history entry.
-6. `app.js` reloads the data and updates the dashboard.
+Run the complete local quality gate:
 
-See [architecture](docs/architecture.md) and the [demo script](docs/demo-script.md).
+```bash
+./mvnw clean verify
+```
 
-## CI/CD in one sentence
+The build compiles the application, runs automated tests, enforces at least 70%
+line coverage for non-trivial backend code, produces a JaCoCo HTML report at
+`target/site/jacoco/index.html`, and packages a runnable JAR.
 
-GitHub Actions tests every pull request; after code reaches `main`, it tests again, smoke-tests MySQL, publishes the JAR artifact, and publishes a Docker image.
+GitHub Actions performs the same verification, smoke-tests the JAR against
+MySQL, validates the Compose model, and builds the Docker image. Merges to
+`main` also publish the JAR artifact and tagged container images to GitHub
+Container Registry.
 
-## Documentation
+## Project layout
 
-- Meeting Minutes: [docs/MoM/MoM-001-Business-Requirements.md](docs/MoM/MoM-001-Business-Requirements.md)
-- User Stories: [docs/Requirements/User-Stories.md](docs/Requirements/User-Stories.md)
-- Architecture Documentation: [docs/Architecture/System-Architecture.md](docs/Architecture/System-Architecture.md)
-- Testing Strategy: [docs/Testing/Test-Strategy.md](docs/Testing/Test-Strategy.md)
-- GitHub Kanban Board: refer to the team's GitHub Project board used for delivery tracking.
+```text
+src/main/java/          Spring controllers, services, rules, repositories
+src/main/resources/     Runtime configuration, Flyway SQL, dashboard assets
+src/test/               Unit, MVC, persistence, and integration tests
+docs/                   Requirements, architecture, testing, API, demo, runbooks
+.github/workflows/       Continuous integration and container delivery
+Dockerfile               Reproducible multi-stage application image
+compose.yaml             Application + persistent MySQL deployment
+deploy-linux.sh          One-command Linux VM deployment
+```
+
+## Documentation index
+
+- [Business meeting minutes](docs/MoM/MoM-001-Business-Requirements.md)
+- [User stories and acceptance criteria](docs/Requirements/User-Stories.md)
+- [System architecture](docs/Architecture/System-Architecture.md)
+- [Engineering decisions](docs/architecture.md)
+- [Testing strategy](docs/Testing/Test-Strategy.md)
+- [API examples](docs/api-examples.http)
+- [Linux VM deployment](docs/linux-deployment.md)
+- [Five-minute demonstration](docs/demo-script.md)
+- [Presentation checklist](docs/presentation-checklist.md)
+- [Contribution workflow](CONTRIBUTING.md)
+- [Security scope](SECURITY.md)
+
+## Scope and security
+
+SecureFlow is a classroom/demo MVP. It deliberately has no authentication,
+authorization, encryption termination, editable rule administration, message
+queue, or machine-learning model. Restrict VM port `8080` to the presentation
+network or your own IP and do not use real financial or personal data.

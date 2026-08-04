@@ -1,83 +1,107 @@
 # System Architecture
 
-## System Overview
-
-SecureFlow is a transaction-monitoring system that accepts financial transaction data, applies business-rule-based fraud checks, and exposes monitoring outcomes through a dashboard and API.
-
-The repository currently contains:
-- A Spring Boot Web MVC backend.
-- A static frontend (HTML/CSS/vanilla JavaScript) served by Spring Boot.
-- A MySQL persistence model for transactions (Flyway migration + JPA repository).
-- Test execution and packaging through Maven and GitHub Actions CI.
-
-## High-Level Architecture Diagram
+## System context
 
 ```mermaid
-flowchart TD
-    User[Operations / Fraud Analyst] --> FE[Frontend Layer\nStatic Dashboard\nindex.html, styles.css, transaction-form.js]
-    FE --> API[Backend REST API Layer\nSpring Web MVC Controllers]
-    API --> SVC[Service Layer\nTransaction and Rule Evaluation Logic]
-    SVC --> REPO[Repository Layer\nSpring Data JPA Repositories]
-    REPO --> DB[(Database Layer\nMySQL transactions table)]
-
-    SVC --> ALERT[Alert Outcomes]
-    ALERT --> FE
-
-    CI[CI/CD Pipeline\nGitHub Actions + Maven Verify] --> API
-    CI --> SVC
-    CI --> REPO
+flowchart LR
+    Operator["Fraud operations analyst"] -->|Uses browser| SecureFlow["SecureFlow"]
+    APIClient["API client"] -->|REST/JSON| SecureFlow
+    SecureFlow -->|Reads and writes| MySQL[("MySQL 8.4")]
+    GitHub["GitHub Actions"] -->|Tests and packages| SecureFlow
+    GitHub -->|Publishes image| GHCR["GitHub Container Registry"]
 ```
 
-## Layered View
+The static dashboard and backend are packaged together. The application has no
+external runtime dependency beyond MySQL.
 
-### Frontend Layer
-- Static assets under src/main/resources/static.
-- Provides dashboard UI for monitoring and transaction submission.
-- Uses vanilla JavaScript for form submission to backend API endpoints.
+## Container and component view
 
-### Backend REST API Layer
-- Implemented using Spring Boot Web MVC.
-- Exposes HTTP endpoints for transaction operations (for example, POST /api/transactions).
-- Handles request validation and response mapping.
+```mermaid
+flowchart TB
+    UI["Static dashboard<br/>HTML + CSS + JavaScript"] -->|Relative HTTP/JSON| Controllers["REST controllers"]
+    Controllers --> TransactionService["Transaction service"]
+    Controllers --> AlertService["Alert service"]
+    Controllers --> Dashboard["Dashboard summary"]
+    TransactionService --> TransactionRepository["Transaction repository"]
+    TransactionService --> MonitoringService["Monitoring service"]
+    MonitoringService --> Rules["Amount / Velocity / New Payee rules"]
+    MonitoringService --> AlertService
+    AlertService --> AlertRepository["Alert repository"]
+    Dashboard --> TransactionRepository
+    Dashboard --> AlertRepository
+    TransactionRepository --> DB[("MySQL")]
+    AlertRepository --> DB
+```
 
-### Service Layer
-- Coordinates transaction creation and business processing.
-- Applies normalization and orchestrates interactions between API and repository.
-- Serves as the evaluation point for configurable monitoring rules.
+## Transaction and alert sequence
 
-### Repository Layer
-- Spring Data JPA repository interfaces.
-- Encapsulates data access operations for transaction entities.
+```mermaid
+sequenceDiagram
+    participant U as Operator/API client
+    participant C as TransactionController
+    participant T as TransactionService
+    participant D as MySQL
+    participant M as MonitoringService
+    participant A as AlertService
+    U->>C: POST /api/transactions
+    C->>T: validated request
+    T->>D: save transaction
+    T->>M: evaluate transaction context
+    M->>D: read recent/account-payee history
+    M->>A: create each matching alert
+    A->>D: save alert, links, and initial history
+    T-->>U: 201 transaction + generated alerts
+```
 
-### Database Layer
-- MySQL as the primary runtime datastore.
-- Schema managed through Flyway migration scripts.
-- Transaction records persisted with key fields (account, payee, amount, currency, times, description).
+## Database model
 
-## Transaction Processing Flow
+```mermaid
+erDiagram
+    TRANSACTIONS {
+        bigint id PK
+        varchar account_id
+        varchar payee_id
+        decimal amount
+        char currency
+        datetime transaction_time
+        varchar description
+        datetime created_at
+    }
+    ALERTS {
+        bigint id PK
+        varchar rule_type
+        varchar severity
+        varchar status
+        varchar account_id
+        datetime created_at
+        varchar resolution_notes
+    }
+    ALERT_STATUS_HISTORY {
+        bigint id PK
+        bigint alert_id FK
+        varchar previous_status
+        varchar new_status
+        datetime changed_at
+        varchar note
+    }
+    ALERT_TRANSACTIONS {
+        bigint alert_id FK
+        bigint transaction_id FK
+    }
+    ALERTS ||--o{ ALERT_STATUS_HISTORY : records
+    ALERTS ||--o{ ALERT_TRANSACTIONS : contains
+    TRANSACTIONS ||--o{ ALERT_TRANSACTIONS : triggers
+```
 
-1. A user submits transaction data from the dashboard or an API client.
-2. The REST controller validates and accepts the request payload.
-3. The service layer normalizes and prepares the transaction record.
-4. The repository layer persists the record to MySQL.
-5. The API returns a created response to the caller.
+## Linux deployment view
 
-## Fraud Detection Flow
+```mermaid
+flowchart LR
+    Browser -->|TCP 8080| App["SecureFlow container<br/>non-root, read-only"]
+    App -->|private network, TCP 3306| DB["MySQL 8.4 container"]
+    DB --> Volume[("Persistent Docker volume")]
+```
 
-1. A transaction enters processing.
-2. Configurable monitoring rules are evaluated against transaction context.
-3. Rule outcomes determine whether the transaction is suspicious.
-4. The result is propagated for alert handling and monitoring visibility.
-
-## Alert Generation Flow
-
-1. A suspicious outcome is identified during rule evaluation.
-2. The system creates alert information according to defined alerting strategy.
-3. Alert information is exposed to the dashboard for analyst review.
-4. Analysts use the alert list as the operational investigation queue.
-
-## Audit Trail Flow
-
-1. Transaction lifecycle data is persisted with timestamps.
-2. Monitoring and alert-related outcomes are retained as reviewable records.
-3. Historical records support investigation, compliance checks, and operational traceability.
+Docker publishes only port `8080`. MySQL remains on the private Compose network.
+Both services have health checks, bounded memory/logging, and automatic restart
+policies.
