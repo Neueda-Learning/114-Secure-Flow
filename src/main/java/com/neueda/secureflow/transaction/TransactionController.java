@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -19,7 +22,12 @@ public class TransactionController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public TransactionResponse create(@Valid @RequestBody CreateTransactionRequest request) {
+    public TransactionCreatedResponse create(@Valid @RequestBody CreateTransactionRequest request) {
         return service.create(request);
+    }
+
+    @GetMapping
+    public List<TransactionResponse> list(@RequestParam(required = false) String search) {
+        return service.list(search);
     }
 }

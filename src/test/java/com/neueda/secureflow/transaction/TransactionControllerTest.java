@@ -14,6 +14,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.neueda.secureflow.monitoring.MonitoringService;
+import java.util.List;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -24,10 +26,15 @@ class TransactionControllerTest {
     @MockitoBean
     private TransactionRepository repository;
 
+    @MockitoBean
+    private MonitoringService monitoringService;
+
     @Test
     void createsAValidTransaction() throws Exception {
         when(repository.save(any(TransactionEntity.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(monitoringService.evaluate(any(TransactionEntity.class), any(Boolean.class)))
+                .thenReturn(List.of());
 
         mockMvc.perform(post("/api/transactions")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -42,9 +49,10 @@ class TransactionControllerTest {
                                 }
                                 """))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.accountId").value("ACC-001"))
-                .andExpect(jsonPath("$.amount").value(125.50))
-                .andExpect(jsonPath("$.currency").value("USD"));
+                .andExpect(jsonPath("$.transaction.accountId").value("ACC-001"))
+                .andExpect(jsonPath("$.transaction.amount").value(125.50))
+                .andExpect(jsonPath("$.transaction.currency").value("USD"))
+                .andExpect(jsonPath("$.generatedAlerts").isEmpty());
     }
 
     @Test
