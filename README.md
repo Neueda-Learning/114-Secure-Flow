@@ -51,3 +51,11 @@ Open:
 ## CI/CD in one sentence
 
 GitHub Actions tests every pull request; after code reaches `main`, it tests again and publishes the runnable JAR as a downloadable artifact.
+
+## Documentation
+
+- Meeting Minutes: [docs/MoM/MoM-001-Business-Requirements.md](docs/MoM/MoM-001-Business-Requirements.md)
+- User Stories: [docs/Requirements/User-Stories.md](docs/Requirements/User-Stories.md)
+- Architecture Documentation: [docs/Architecture/System-Architecture.md](docs/Architecture/System-Architecture.md)
+- Testing Strategy: [docs/Testing/Test-Strategy.md](docs/Testing/Test-Strategy.md)
+- GitHub Kanban Board: Refer to the team's GitHub Project board used for delivery tracking.
