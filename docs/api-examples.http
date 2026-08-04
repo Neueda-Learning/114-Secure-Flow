@@ -1,0 +1,72 @@
+@baseUrl = http://localhost:8080
+
+### Application and database health
+GET {{baseUrl}}/actuator/health
+
+### Create a transaction (first account/payee use also raises NEW_PAYEE)
+POST {{baseUrl}}/api/transactions
+Content-Type: application/json
+
+{
+  "accountId": "ACC-001",
+  "payeeId": "PAYEE-A",
+  "amount": 250.00,
+  "currency": "INR",
+  "transactionTime": "2026-08-05T09:00:00Z",
+  "description": "Supplier invoice"
+}
+
+### Create a high-amount transaction
+POST {{baseUrl}}/api/transactions
+Content-Type: application/json
+
+{
+  "accountId": "ACC-001",
+  "payeeId": "PAYEE-A",
+  "amount": 15000.00,
+  "currency": "INR",
+  "transactionTime": "2026-08-05T09:01:00Z",
+  "description": "High amount demonstration"
+}
+
+### Search and filter transactions
+GET {{baseUrl}}/api/transactions?search=ACC-001&minAmount=100&page=0&size=20
+
+### List open alerts
+GET {{baseUrl}}/api/alerts?status=OPEN&page=0&size=20
+
+### Read alert details (replace 1 with an existing alert ID)
+GET {{baseUrl}}/api/alerts/1
+
+### Acknowledge an alert
+PATCH {{baseUrl}}/api/alerts/1/status
+Content-Type: application/json
+
+{
+  "targetStatus": "ACKNOWLEDGED",
+  "resolutionNotes": null
+}
+
+### Start investigation
+PATCH {{baseUrl}}/api/alerts/1/status
+Content-Type: application/json
+
+{
+  "targetStatus": "INVESTIGATING",
+  "resolutionNotes": null
+}
+
+### Close an alert (terminal states require meaningful notes)
+PATCH {{baseUrl}}/api/alerts/1/status
+Content-Type: application/json
+
+{
+  "targetStatus": "CLOSED",
+  "resolutionNotes": "Reviewed and confirmed as a legitimate supplier payment"
+}
+
+### Read effective rule configuration
+GET {{baseUrl}}/api/rules
+
+### Read dashboard summary
+GET {{baseUrl}}/api/dashboard/summary

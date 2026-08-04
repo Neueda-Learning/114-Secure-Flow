@@ -1,70 +1,69 @@
 # Test Strategy
 
-## Testing Objectives
+## Objectives
 
-- Verify that transaction monitoring behavior meets business requirements.
-- Prevent regressions in API behavior, validation rules, and dashboard shell behavior.
-- Ensure changes remain buildable, testable, and packageable in CI.
-- Maintain agreed minimum automated coverage requirements.
+- Protect monitoring-rule boundaries and alert lifecycle behavior.
+- Verify request validation, response status, filtering, and pagination.
+- Exercise persistence mappings and Flyway migrations.
+- Keep the dashboard's required controls and assets present.
+- Prove that the packaged application starts against MySQL.
+- Keep the Linux container deployment reproducible.
 
-## Unit Testing Approach
+## Automated test layers
 
-- Use focused unit-style tests for isolated logic and data structures.
-- Validate entity and configuration behavior with deterministic inputs.
-- Keep unit tests fast and independent from external services.
-- Store unit tests under src/test/java following package structure.
+| Layer | Focus | Main tools |
+|---|---|---|
+| Unit | Rules, entities, configuration, status transitions | JUnit 5, Mockito |
+| Web/API | Controllers, validation, status codes, JSON payloads | MockMvc |
+| Integration | Spring context, repositories, monitoring flow, migrations | Spring Boot Test, H2 |
+| Packaging smoke test | Runnable JAR, MySQL connection, Flyway, health | GitHub Actions, MySQL 8.4, curl |
+| Deployment validation | Compose model and multi-stage image build | Docker Compose, Docker BuildKit |
 
-## Integration Testing Approach
+## Local quality gate
 
-- Use Spring Boot test slices/full context tests for controller and service integration paths.
-- Execute tests with the repository's test profile and in-memory H2 database configuration.
-- Validate that request handling, validation, persistence behavior, and response mapping work together.
-
-## API Testing Approach
-
-- Use MockMvc-based tests for HTTP endpoint verification.
-- Verify success paths (2xx), validation failures (4xx), and response payload shape.
-- Include representative request/response scenarios for transaction endpoints.
-
-## Validation Testing
-
-- Validate required fields, numeric thresholds, and format constraints.
-- Confirm invalid inputs are rejected with correct HTTP status behavior.
-- Confirm normalized values (for example currency formatting behavior) are reflected in API responses.
-
-## Test Automation Process
-
-- Local execution command:
+Windows:
 
 ```powershell
 .\mvnw.cmd clean verify
 ```
 
-- The command performs compile, test execution, JaCoCo reporting, and coverage check.
-- BUILD SUCCESS is the required local baseline before opening a pull request.
+Linux/macOS:
 
-## CI/CD Testing Flow
+```bash
+./mvnw clean verify
+```
 
-- GitHub Actions workflow triggers on:
-  - pull requests targeting main
-  - pushes to main
-- CI steps:
-1. Checkout repository.
-2. Set up Java 21.
-3. Run Maven wrapper with clean verify.
-4. Upload runnable JAR artifact.
-5. Upload JaCoCo report artifact.
+`verify` compiles all code, runs the test suite, produces the JaCoCo report,
+enforces coverage, and packages the executable JAR. A successful local build is
+required before opening a pull request.
 
-## Coverage Requirements
+## Coverage
 
-- Coverage is enforced by jacoco-maven-plugin during verify.
-- Current rule requires minimum line coverage ratio of 0.70 at bundle level.
-- Application bootstrap and entity classes are excluded per existing Maven configuration.
+The Maven build enforces at least 70% bundle-level line coverage for non-trivial
+backend code. Bootstrap, configuration, DTO, and entity boilerplate are excluded
+from the threshold. The HTML report is generated at
+`target/site/jacoco/index.html`.
 
-## Pre-PR Verification Checklist for Developers
+Coverage is a regression signal, not a substitute for acceptance testing. Tests
+must assert meaningful boundaries such as ₹10,000 versus ₹10,000.01, the fifth
+versus sixth transaction, valid and invalid transitions, and malformed filters.
 
-1. Pull latest main and rebase/sync your feature branch.
-2. Run local command: .\mvnw.cmd clean verify.
-3. Confirm all tests pass and coverage check passes.
-4. Review changed files to ensure test updates accompany behavior changes.
-5. Push branch and open pull request only after local verification is green.
+## CI flow
+
+1. Check out the exact commit.
+2. Install Java 21 and cache Maven dependencies.
+3. Run `clean verify`.
+4. Start the packaged JAR against a MySQL 8.4 service.
+5. Wait for `/actuator/health` to report healthy.
+6. Validate `compose.yaml` and build the runtime image.
+7. Upload the runnable JAR and JaCoCo report.
+
+On `main` and version tags, continuous delivery repeats verification and
+publishes commit-addressable and release-tagged images to GitHub Container
+Registry.
+
+## Manual acceptance
+
+Before the presentation, follow [presentation-checklist.md](../presentation-checklist.md)
+on the actual Linux VM and exercise all three rule scenarios and the complete
+alert workflow in a browser.

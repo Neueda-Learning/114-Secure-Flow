@@ -51,12 +51,24 @@ jobs:
           DB_PASSWORD: secureflow
         run: |
           java -jar target/secureflow-*.jar > application.log 2>&1 &
-          for attempt in {1..30}; do
-            curl --fail http://localhost:8080/actuator/health && exit 0
+          APP_PID=$!
+          for attempt in {1..45}; do
+            if curl --fail --silent http://localhost:8080/actuator/health > /dev/null; then
+              kill "$APP_PID"
+              exit 0
+            fi
             sleep 2
           done
           cat application.log
+          kill "$APP_PID" || true
           exit 1
+
+      - name: Validate Linux Docker deployment
+        env:
+          DB_PASSWORD: compose-validation-only
+        run: |
+          docker compose config --quiet
+          docker build --tag secureflow:ci .
 
       - name: Upload runnable JAR
         uses: actions/upload-artifact@v4
