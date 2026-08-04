@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 class AmountMonitoringRuleTest {
     private final MonitoringProperties properties = new MonitoringProperties(
-            new MonitoringProperties.Amount(true, new BigDecimal("10000.00"), "USD"),
+            new MonitoringProperties.Amount(true, new BigDecimal("10000.00"), "INR"),
             new MonitoringProperties.Velocity(true, 5, 10),
             new MonitoringProperties.NewPayee(true));
     private final AmountMonitoringRule rule = new AmountMonitoringRule(new AmountRule(properties));
@@ -22,7 +22,7 @@ class AmountMonitoringRuleTest {
     void convertsSriramsMatchIntoAHighAlert() {
         Instant now = Instant.parse("2026-08-04T10:00:00Z");
         TransactionEntity transaction = new TransactionEntity("ACC-1", "PAYEE-1",
-                new BigDecimal("10000.01"), "USD", now, null, now);
+                new BigDecimal("10000.01"), "INR", now, null, now);
 
         RuleMatch match = rule.evaluate(transaction, new RuleContext(false, List.of(transaction))).orElseThrow();
 

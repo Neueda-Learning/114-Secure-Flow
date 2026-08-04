@@ -43,7 +43,7 @@ class TransactionControllerTest {
                                   "accountId": "ACC-001",
                                   "payeeId": "PAYEE-001",
                                   "amount": 125.50,
-                                  "currency": "usd",
+                                  "currency": "inr",
                                   "transactionTime": "2026-08-03T10:00:00Z",
                                   "description": "Invoice"
                                 }
@@ -51,7 +51,7 @@ class TransactionControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.transaction.accountId").value("ACC-001"))
                 .andExpect(jsonPath("$.transaction.amount").value(125.50))
-                .andExpect(jsonPath("$.transaction.currency").value("USD"))
+                .andExpect(jsonPath("$.transaction.currency").value("INR"))
                 .andExpect(jsonPath("$.generatedAlerts").isEmpty());
     }
 

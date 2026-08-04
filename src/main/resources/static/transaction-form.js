@@ -27,21 +27,16 @@
         const accountId = accountIdInput.value.trim();
         const payeeId = payeeIdInput.value.trim();
         const amount = Number.parseFloat(amountInput.value);
-        const currency = currencyInput.value.trim();
+        const currency = "INR";
         const transactionTime = transactionTimeInput.value;
 
-        if (!accountId || !payeeId || !currency || !transactionTime || Number.isNaN(amountInput.valueAsNumber)) {
+        if (!accountId || !payeeId || !transactionTime || Number.isNaN(amountInput.valueAsNumber)) {
             showFeedback("Please fill in all required fields.", "error");
             return null;
         }
 
         if (!(amount > 0)) {
             showFeedback("Amount must be greater than 0.", "error");
-            return null;
-        }
-
-        if (!/^[A-Za-z]{3}$/.test(currency)) {
-            showFeedback("Currency must be exactly 3 letters.", "error");
             return null;
         }
 
@@ -57,7 +52,7 @@
             accountId: accountId,
             payeeId: payeeId,
             amount: amount,
-            currency: currency.toUpperCase(),
+            currency: currency,
             transactionTime: transactionDate.toISOString(),
             description: description
         };
@@ -84,11 +79,13 @@
             });
 
             if (!response.ok) {
-                showFeedback("Unable to submit transaction. Please check the data and try again.", "error");
+                const error = await response.json().catch(function () { return null; });
+                showFeedback(error?.detail || "Unable to submit transaction. Please check the data and try again.", "error");
                 return;
             }
 
             form.reset();
+            currencyInput.value = "INR";
             showFeedback("Transaction submitted successfully.", "success");
             window.dispatchEvent(new CustomEvent("secureflow:refresh"));
         } catch (_error) {
