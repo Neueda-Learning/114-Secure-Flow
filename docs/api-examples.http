@@ -3,16 +3,22 @@
 ### Health
 GET {{baseUrl}}/actuator/health
 
-### Create a normal transaction (first use also raises NEW_PAYEE)
+### Dashboard summary
+GET {{baseUrl}}/api/dashboard/summary
+
+### Effective monitoring rules
+GET {{baseUrl}}/api/rules
+
+### Create a normal transaction
 POST {{baseUrl}}/api/transactions
 Content-Type: application/json
 
 {
-  "accountId": "ACC-001",
-  "payeeId": "PAYEE-A",
+  "accountId": "ACC-100",
+  "payeeId": "PAYEE-100",
   "amount": 250.00,
   "currency": "INR",
-  "description": "Supplier invoice"
+  "description": "Monthly service"
 }
 
 ### Create a high-amount transaction
@@ -20,23 +26,23 @@ POST {{baseUrl}}/api/transactions
 Content-Type: application/json
 
 {
-  "accountId": "ACC-001",
-  "payeeId": "PAYEE-A",
+  "accountId": "ACC-200",
+  "payeeId": "PAYEE-200",
   "amount": 15000.00,
   "currency": "INR",
-  "description": "Large supplier payment"
+  "description": "High amount example"
 }
 
 ### Search transactions
-GET {{baseUrl}}/api/transactions?search=ACC-001&minAmount=100&page=0&size=20
+GET {{baseUrl}}/api/transactions?search=ACC-200&minAmount=10000&size=20
 
 ### List open alerts
-GET {{baseUrl}}/api/alerts?status=OPEN&page=0&size=20
+GET {{baseUrl}}/api/alerts?status=OPEN&size=20
 
-### Alert detail (replace 1)
+### Replace 1 with a real alert ID
 GET {{baseUrl}}/api/alerts/1
 
-### Acknowledge alert
+### Acknowledge an open alert
 PATCH {{baseUrl}}/api/alerts/1/status
 Content-Type: application/json
 
@@ -54,17 +60,11 @@ Content-Type: application/json
   "resolutionNotes": null
 }
 
-### Close alert
+### Close after investigation
 PATCH {{baseUrl}}/api/alerts/1/status
 Content-Type: application/json
 
 {
   "targetStatus": "CLOSED",
-  "resolutionNotes": "Reviewed and confirmed as a legitimate supplier payment"
+  "resolutionNotes": "Confirmed legitimate transaction"
 }
-
-### Effective rule configuration
-GET {{baseUrl}}/api/rules
-
-### Dashboard summary
-GET {{baseUrl}}/api/dashboard/summary

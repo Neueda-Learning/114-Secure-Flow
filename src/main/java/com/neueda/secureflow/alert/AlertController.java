@@ -2,11 +2,12 @@ package com.neueda.secureflow.alert;
 
 import com.neueda.secureflow.alert.dto.AlertDetailResponse;
 import com.neueda.secureflow.alert.dto.AlertSummaryResponse;
-import com.neueda.secureflow.alert.dto.UpdateAlertStatusRequest;
+import com.neueda.secureflow.alert.dto.UpdateAlertRequest;
 import com.neueda.secureflow.common.PageResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.validation.annotation.Validated;
 
 @RestController
 @RequestMapping("/api/alerts")
@@ -41,8 +41,10 @@ public class AlertController {
     }
 
     @PatchMapping("/{id}/status")
-    public AlertDetailResponse transition(@PathVariable long id,
-                                          @Valid @RequestBody UpdateAlertStatusRequest request) {
-        return service.transition(id, request.targetStatus(), request.resolutionNotes());
+    public AlertDetailResponse updateStatus(
+            @PathVariable long id,
+            @Valid @RequestBody UpdateAlertRequest request) {
+        return service.updateStatus(
+                id, request.targetStatus(), request.resolutionNotes());
     }
 }
