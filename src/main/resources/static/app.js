@@ -126,7 +126,8 @@ function renderAlerts(page) {
             + "<td>" + escapeHtml(alert.accountId) + "</td>"
             + '<td><span class="badge ' + alert.severity.toLowerCase() + '">'
             + alert.severity + "</span></td>"
-            + '<td><span class="badge">' + alert.status + "</span></td>"
+            + '<td><span class="badge ' + alert.status.toLowerCase() + '">'
+            + alert.status + "</span></td>"
             + "<td>" + alertActions(alert) + "</td>"
             + "</tr>";
     }).join("");
@@ -260,11 +261,25 @@ document.getElementById("close-dialog").addEventListener("click", function () {
     alertDialog.close();
 });
 
+document.querySelectorAll('.nav-link[href^="#"]').forEach(function (link) {
+    link.addEventListener("click", function () {
+        document.querySelectorAll('.nav-link[href^="#"]').forEach(function (item) {
+            item.classList.remove("active");
+        });
+        link.classList.add("active");
+    });
+});
+
 api("/actuator/health").then(function (health) {
-    document.getElementById("health").textContent =
-        health.status === "UP" ? "● System healthy" : "● System unavailable";
+    var healthLabel = document.getElementById("health");
+    var isHealthy = health.status === "UP";
+    healthLabel.textContent = isHealthy ? "System healthy" : "System unavailable";
+    healthLabel.className = isHealthy
+        ? "health-pill healthy" : "health-pill unhealthy";
 }).catch(function () {
-    document.getElementById("health").textContent = "● Health check failed";
+    var healthLabel = document.getElementById("health");
+    healthLabel.textContent = "Health check failed";
+    healthLabel.className = "health-pill unhealthy";
 });
 
 loadPage();

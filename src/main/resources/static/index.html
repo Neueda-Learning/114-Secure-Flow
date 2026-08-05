@@ -3,91 +3,250 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SecureFlow Beginner</title>
+    <meta name="description" content="SecureFlow transaction monitoring dashboard">
+    <title>SecureFlow | Transaction Monitoring</title>
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<header>
-    <div>
-        <h1>SecureFlow</h1>
-        <p>Simple INR transaction monitoring</p>
-    </div>
-    <div class="links">
-        <span id="health">Checking health...</span>
-        <a href="/swagger-ui.html">Swagger API</a>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<header class="topbar">
+    <a class="brand" href="#overview" aria-label="SecureFlow home">
+        <span class="brand-symbol" aria-hidden="true"></span>
+        <span>
+            <strong>SecureFlow</strong>
+            <small>Transaction monitoring</small>
+        </span>
+    </a>
+
+    <div class="topbar-actions">
+        <span id="health" class="health-pill">Checking system...</span>
+        <a class="api-link" href="/swagger-ui.html">API documentation</a>
     </div>
 </header>
 
-<main>
-    <p id="message" class="message"></p>
+<div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+        <nav>
+            <p class="nav-label">Monitoring</p>
+            <a class="nav-link active" href="#overview"><span aria-hidden="true">▦</span>Overview</a>
+            <a class="nav-link" href="#transaction-entry"><span aria-hidden="true">＋</span>New transaction</a>
+            <a class="nav-link" href="#transactions-section"><span aria-hidden="true">↔</span>Transactions</a>
+            <a class="nav-link" href="#alerts-section"><span aria-hidden="true">!</span>Alerts</a>
 
-    <section class="cards">
-        <article><span>Active alerts</span><strong id="active-alerts">-</strong></article>
-        <article><span>Transactions today</span><strong id="transactions-today">-</strong></article>
-        <article><span>Alerts today</span><strong id="alerts-today">-</strong></article>
-        <article><span>Volume today</span><strong id="volume-today">-</strong></article>
-    </section>
+            <p class="nav-label">Configuration</p>
+            <a class="nav-link" href="#rules-section"><span aria-hidden="true">⌁</span>Monitoring rules</a>
+            <a class="nav-link" href="/swagger-ui.html"><span aria-hidden="true">{ }</span>Swagger API</a>
+        </nav>
 
-    <section class="panel">
-        <h2>Add a transaction</h2>
-        <form id="transaction-form" class="form-grid">
-            <label>Account ID
-                <input id="accountId" maxlength="50" required>
-            </label>
-            <label>Payee ID
-                <input id="payeeId" maxlength="50" required>
-            </label>
-            <label>Amount in INR
-                <input id="amount" type="number" min="0.01" step="0.01" required>
-            </label>
-            <label>Description
-                <input id="description" maxlength="255">
-            </label>
-            <button type="submit">Save and check rules</button>
-        </form>
-    </section>
-
-    <section class="panel">
-        <h2>Monitoring rules</h2>
-        <div id="rules" class="rule-list"></div>
-    </section>
-
-    <section class="panel">
-        <div class="section-heading">
-            <h2>Transactions</h2>
-            <form id="search-form">
-                <input id="search" placeholder="Account, payee or description">
-                <input id="minAmount" type="number" min="0" placeholder="Minimum amount">
-                <input id="maxAmount" type="number" min="0" placeholder="Maximum amount">
-                <button type="submit">Search</button>
-                <button id="clear-search" type="button" class="secondary">Clear</button>
-            </form>
+        <div class="desk-card">
+            <span>India monitoring desk</span>
+            <strong>INR · IST</strong>
+            <small>Three rules evaluate every transaction.</small>
         </div>
-        <div class="table-scroll">
-            <table>
-                <thead>
-                <tr><th>ID</th><th>Account</th><th>Payee</th><th>Amount</th><th>Time (IST)</th></tr>
-                </thead>
-                <tbody id="transactions"></tbody>
-            </table>
-        </div>
-    </section>
+    </aside>
 
-    <section class="panel">
-        <h2>Alerts</h2>
-        <div class="table-scroll">
-            <table>
-                <thead>
-                <tr><th>Rule</th><th>Account</th><th>Severity</th><th>Status</th><th>Actions</th></tr>
-                </thead>
-                <tbody id="alerts"></tbody>
-            </table>
+    <main id="main-content">
+        <p id="message" class="message" role="status" aria-live="polite"></p>
+
+        <section id="overview" class="hero">
+            <div>
+                <p class="eyebrow">FINANCIAL CRIME OPERATIONS</p>
+                <h1>Transaction monitoring</h1>
+                <p class="hero-copy">
+                    Review today’s payment activity, investigate alerts and keep
+                    a clear audit trail.
+                </p>
+            </div>
+            <div class="market-chip">
+                <span>Operating market</span>
+                <strong>India</strong>
+                <small>Currency INR · Time zone IST</small>
+            </div>
+        </section>
+
+        <section class="cards" aria-label="Today’s monitoring summary">
+            <article class="summary-card risk">
+                <span class="card-icon" aria-hidden="true">!</span>
+                <div>
+                    <span>Active alerts</span>
+                    <strong id="active-alerts">—</strong>
+                    <small>Require operator review</small>
+                </div>
+            </article>
+            <article class="summary-card">
+                <span class="card-icon" aria-hidden="true">↔</span>
+                <div>
+                    <span>Transactions today</span>
+                    <strong id="transactions-today">—</strong>
+                    <small>Payments processed</small>
+                </div>
+            </article>
+            <article class="summary-card">
+                <span class="card-icon" aria-hidden="true">⌁</span>
+                <div>
+                    <span>Alerts today</span>
+                    <strong id="alerts-today">—</strong>
+                    <small>Across all active rules</small>
+                </div>
+            </article>
+            <article class="summary-card">
+                <span class="card-icon rupee" aria-hidden="true">₹</span>
+                <div>
+                    <span>Volume today</span>
+                    <strong id="volume-today">—</strong>
+                    <small>Total monitored value</small>
+                </div>
+            </article>
+        </section>
+
+        <div class="dashboard-grid">
+            <section id="transaction-entry" class="panel transaction-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">LIVE INPUT</p>
+                        <h2>Record a transaction</h2>
+                    </div>
+                    <span class="panel-tag">Evaluated immediately</span>
+                </div>
+                <p class="panel-description">
+                    Enter an INR payment. SecureFlow saves it with the current
+                    server time and checks every monitoring rule.
+                </p>
+
+                <form id="transaction-form" class="form-grid">
+                    <label>
+                        <span>Account ID</span>
+                        <input id="accountId" maxlength="50"
+                               placeholder="Example: ACC-1001" required>
+                    </label>
+                    <label>
+                        <span>Payee ID</span>
+                        <input id="payeeId" maxlength="50"
+                               placeholder="Example: PAYEE-501" required>
+                    </label>
+                    <label>
+                        <span>Amount in INR</span>
+                        <input id="amount" type="number" min="0.01" step="0.01"
+                               placeholder="0.00" required>
+                    </label>
+                    <label>
+                        <span>Description <small>Optional</small></span>
+                        <input id="description" maxlength="255"
+                               placeholder="Payment description">
+                    </label>
+                    <button class="primary form-action" type="submit">
+                        Save and check rules
+                    </button>
+                </form>
+            </section>
+
+            <section id="rules-section" class="panel rules-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">PROTECTION</p>
+                        <h2>Monitoring rules</h2>
+                    </div>
+                    <span class="live-label"><i></i> Active</span>
+                </div>
+                <div id="rules" class="rule-list">
+                    <p class="empty">Loading monitoring rules...</p>
+                </div>
+            </section>
         </div>
-    </section>
-</main>
+
+        <section id="transactions-section" class="panel data-panel">
+            <div class="panel-heading data-heading">
+                <div>
+                    <p class="eyebrow">AUDIT TRAIL</p>
+                    <h2>Transactions</h2>
+                </div>
+
+                <form id="search-form" class="search-form" aria-label="Transaction filters">
+                    <label class="search-wide">
+                        <span class="sr-only">Search transactions</span>
+                        <input id="search" type="search"
+                               placeholder="Search account, payee or description">
+                    </label>
+                    <label>
+                        <span class="sr-only">Minimum amount</span>
+                        <input id="minAmount" type="number" min="0"
+                               placeholder="Minimum ₹">
+                    </label>
+                    <label>
+                        <span class="sr-only">Maximum amount</span>
+                        <input id="maxAmount" type="number" min="0"
+                               placeholder="Maximum ₹">
+                    </label>
+                    <button class="primary compact" type="submit">Search</button>
+                    <button id="clear-search" class="secondary compact"
+                            type="button">Clear</button>
+                </form>
+            </div>
+
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Account</th>
+                        <th>Payee</th>
+                        <th>Amount</th>
+                        <th>Transaction time (IST)</th>
+                    </tr>
+                    </thead>
+                    <tbody id="transactions">
+                    <tr><td colspan="5" class="empty">Loading transactions...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="alerts-section" class="panel data-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">INVESTIGATION QUEUE</p>
+                    <h2>Alerts</h2>
+                </div>
+                <p class="heading-note">
+                    Acknowledge, investigate and resolve suspicious activity.
+                </p>
+            </div>
+
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Rule</th>
+                        <th>Account</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="alerts">
+                    <tr><td colspan="5" class="empty">Loading alerts...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer>
+            <span>SecureFlow transaction monitoring</span>
+            <span>Java 21 · Spring Boot · MySQL · Flyway</span>
+        </footer>
+    </main>
+</div>
 
 <dialog id="alert-dialog">
-    <button id="close-dialog" class="close" type="button">Close</button>
+    <div class="dialog-heading">
+        <div>
+            <p class="eyebrow">ALERT INVESTIGATION</p>
+            <h2>Alert details</h2>
+        </div>
+        <button id="close-dialog" class="close" type="button"
+                aria-label="Close alert details">×</button>
+    </div>
     <div id="alert-details"></div>
 </dialog>
 
