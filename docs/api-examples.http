@@ -6,6 +6,9 @@ GET {{baseUrl}}/actuator/health
 ### Dashboard summary
 GET {{baseUrl}}/api/dashboard/summary
 
+### Load the presentation dataset once
+POST {{baseUrl}}/api/demo/seed
+
 ### Effective monitoring rules
 GET {{baseUrl}}/api/rules
 
@@ -35,6 +38,9 @@ Content-Type: application/json
 
 ### Search transactions
 GET {{baseUrl}}/api/transactions?search=ACC-200&minAmount=10000&size=20
+
+### Find one transaction by its ID
+GET {{baseUrl}}/api/transactions?transactionId=1
 
 ### List open alerts
 GET {{baseUrl}}/api/alerts?status=OPEN&size=20

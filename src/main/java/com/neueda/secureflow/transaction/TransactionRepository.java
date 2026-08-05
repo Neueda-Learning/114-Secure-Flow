@@ -21,6 +21,7 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
                 or lower(t.accountId) like lower(concat('%', :search, '%'))
                 or lower(t.payeeId) like lower(concat('%', :search, '%'))
                 or lower(coalesce(t.description, '')) like lower(concat('%', :search, '%')))
+              and (:transactionId is null or t.id = :transactionId)
               and (:minAmount is null or t.amount >= :minAmount)
               and (:maxAmount is null or t.amount <= :maxAmount)
               and (:fromTime is null or t.transactionTime >= :fromTime)
@@ -28,18 +29,16 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
             """)
     Page<TransactionEntity> search(
             @Param("search") String search,
+            @Param("transactionId") Long transactionId,
             @Param("minAmount") BigDecimal minAmount,
             @Param("maxAmount") BigDecimal maxAmount,
             @Param("fromTime") Instant from,
             @Param("toTime") Instant to,
             Pageable pageable);
 
-    long countByTransactionTimeBetween(Instant from, Instant to);
-
     @Query("""
             select coalesce(sum(t.amount), 0)
             from TransactionEntity t
-            where t.transactionTime >= :from and t.transactionTime < :to
             """)
-    BigDecimal sumBetween(@Param("from") Instant from, @Param("to") Instant to);
+    BigDecimal sumAll();
 }

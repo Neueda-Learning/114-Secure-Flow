@@ -3,91 +3,297 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SecureFlow Beginner</title>
+    <meta name="description" content="SecureFlow transaction monitoring dashboard">
+    <title>SecureFlow | Transaction Monitoring</title>
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<header>
-    <div>
-        <h1>SecureFlow</h1>
-        <p>Simple INR transaction monitoring</p>
-    </div>
-    <div class="links">
-        <span id="health">Checking health...</span>
-        <a href="/swagger-ui.html">Swagger API</a>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<header class="topbar">
+    <a class="brand" href="#overview" aria-label="SecureFlow home">
+        <span class="brand-accent" aria-hidden="true"></span>
+        <span>
+            <strong>SecureFlow</strong>
+            <small>Transaction monitoring</small>
+        </span>
+    </a>
+
+    <div class="topbar-actions">
+        <div class="live-clock" aria-label="Current date and time">
+            <span id="live-date">Loading current date...</span>
+            <strong id="live-time">--:--:--</strong>
+        </div>
     </div>
 </header>
 
-<main>
-    <p id="message" class="message"></p>
+<div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+        <nav>
+            <p class="nav-label">Monitoring</p>
+            <a class="nav-link active" href="#overview"><span aria-hidden="true">▦</span>Overview</a>
+            <a class="nav-link" href="#transaction-entry"><span aria-hidden="true">＋</span>Transaction entry</a>
+            <a class="nav-link" href="#transactions-section"><span aria-hidden="true">↔</span>Transactions</a>
+            <a id="alerts-nav" class="nav-link nav-alerts" href="#alerts-section">
+                <span aria-hidden="true">!</span><span>Alerts</span>
+                <strong id="sidebar-alert-count" class="nav-count">0</strong>
+            </a>
+            <a class="nav-link" href="#alert-history-section"><span aria-hidden="true">↺</span>Alert history</a>
 
-    <section class="cards">
-        <article><span>Active alerts</span><strong id="active-alerts">-</strong></article>
-        <article><span>Transactions today</span><strong id="transactions-today">-</strong></article>
-        <article><span>Alerts today</span><strong id="alerts-today">-</strong></article>
-        <article><span>Volume today</span><strong id="volume-today">-</strong></article>
-    </section>
+            <p class="nav-label">Configuration</p>
+            <a class="nav-link" href="#rules-section"><span aria-hidden="true">⌁</span>Monitoring rules</a>
+            <button id="load-demo" class="nav-link nav-button" type="button">
+                <span aria-hidden="true">+</span><span id="demo-label">Add demo data</span>
+            </button>
+        </nav>
+    </aside>
 
-    <section class="panel">
-        <h2>Add a transaction</h2>
-        <form id="transaction-form" class="form-grid">
-            <label>Account ID
-                <input id="accountId" maxlength="50" required>
-            </label>
-            <label>Payee ID
-                <input id="payeeId" maxlength="50" required>
-            </label>
-            <label>Amount in INR
-                <input id="amount" type="number" min="0.01" step="0.01" required>
-            </label>
-            <label>Description
-                <input id="description" maxlength="255">
-            </label>
-            <button type="submit">Save and check rules</button>
-        </form>
-    </section>
+    <main id="main-content">
+        <p id="message" class="message" role="status" aria-live="polite"></p>
 
-    <section class="panel">
-        <h2>Monitoring rules</h2>
-        <div id="rules" class="rule-list"></div>
-    </section>
+        <section id="overview" class="cards" aria-label="Monitoring summary">
+            <article class="summary-card risk">
+                <span class="card-icon" aria-hidden="true">!</span>
+                <div>
+                    <span>Active alerts</span>
+                    <strong id="active-alerts">—</strong>
+                    <small>Requires review</small>
+                </div>
+            </article>
+            <article class="summary-card">
+                <span class="card-icon" aria-hidden="true">↔</span>
+                <div>
+                    <span>Transactions</span>
+                    <strong id="transaction-count">—</strong>
+                    <small>All recorded</small>
+                </div>
+            </article>
+            <article class="summary-card">
+                <span class="card-icon" aria-hidden="true">⌁</span>
+                <div>
+                    <span>Alerts generated</span>
+                    <strong id="alert-count">—</strong>
+                    <small>All recorded</small>
+                </div>
+            </article>
+            <article class="summary-card">
+                <span class="card-icon rupee" aria-hidden="true">₹</span>
+                <div>
+                    <span>Monitored volume</span>
+                    <strong id="transaction-volume">—</strong>
+                    <small>All recorded</small>
+                </div>
+            </article>
+        </section>
 
-    <section class="panel">
-        <div class="section-heading">
-            <h2>Transactions</h2>
-            <form id="search-form">
-                <input id="search" placeholder="Account, payee or description">
-                <input id="minAmount" type="number" min="0" placeholder="Minimum amount">
-                <input id="maxAmount" type="number" min="0" placeholder="Maximum amount">
-                <button type="submit">Search</button>
-                <button id="clear-search" type="button" class="secondary">Clear</button>
-            </form>
+        <div class="dashboard-grid">
+            <section id="transaction-entry" class="panel transaction-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">LIVE INPUT</p>
+                        <h2>Submit transaction</h2>
+                    </div>
+                    <span class="panel-tag">Real-time evaluation</span>
+                </div>
+                <p class="panel-description">
+                    Enter a payment. SecureFlow saves it with the current
+                    server time and checks every monitoring rule.
+                </p>
+
+                <form id="transaction-form" class="form-grid">
+                    <label>
+                        <span>Account ID</span>
+                        <input id="accountId" minlength="3" maxlength="50"
+                               pattern="[A-Za-z0-9\-]{3,50}"
+                               title="Use 3–50 letters, numbers, or hyphens"
+                               placeholder="ACC-1001" required>
+                    </label>
+                    <label>
+                        <span>Payee ID</span>
+                        <input id="payeeId" minlength="3" maxlength="50"
+                               pattern="[A-Za-z0-9\-]{3,50}"
+                               title="Use 3–50 letters, numbers, or hyphens"
+                               placeholder="PAYEE-501" required>
+                    </label>
+                    <label>
+                        <span>Amount</span>
+                        <input id="amount" type="number" min="0.01" step="0.01"
+                               title="Enter an amount greater than zero"
+                               placeholder="0.00" required>
+                    </label>
+                    <label>
+                        <span>Description <small>Optional</small></span>
+                        <input id="description" maxlength="255"
+                               placeholder="Payment description">
+                    </label>
+                    <button class="primary form-action" type="submit">
+                        Submit for monitoring
+                    </button>
+                </form>
+            </section>
+
+            <section id="rules-section" class="panel rules-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">PROTECTION</p>
+                        <h2>Monitoring rules</h2>
+                    </div>
+                    <span class="live-label"><i></i> Active</span>
+                </div>
+                <div id="rules" class="rule-list">
+                    <p class="empty">Loading monitoring rules...</p>
+                </div>
+            </section>
         </div>
-        <div class="table-scroll">
-            <table>
-                <thead>
-                <tr><th>ID</th><th>Account</th><th>Payee</th><th>Amount</th><th>Time (IST)</th></tr>
-                </thead>
-                <tbody id="transactions"></tbody>
-            </table>
-        </div>
-    </section>
 
-    <section class="panel">
-        <h2>Alerts</h2>
-        <div class="table-scroll">
-            <table>
-                <thead>
-                <tr><th>Rule</th><th>Account</th><th>Severity</th><th>Status</th><th>Actions</th></tr>
-                </thead>
-                <tbody id="alerts"></tbody>
-            </table>
-        </div>
-    </section>
-</main>
+        <section id="transactions-section" class="panel data-panel">
+            <div class="panel-heading data-heading">
+                <div>
+                    <p class="eyebrow">AUDIT TRAIL</p>
+                    <h2>Transactions</h2>
+                </div>
+
+                <form id="search-form" class="search-form" aria-label="Transaction filters">
+                    <label class="search-wide">
+                        <span class="sr-only">Search transactions</span>
+                        <input id="search" type="search"
+                               placeholder="Search account, payee or description">
+                    </label>
+                    <label>
+                        <span class="sr-only">Transaction ID</span>
+                        <input id="transactionId" type="number" min="1"
+                               step="1" placeholder="Transaction ID">
+                    </label>
+                    <label>
+                        <span class="sr-only">Minimum amount</span>
+                        <input id="minAmount" type="number" min="0"
+                               step="0.01" placeholder="Minimum ₹">
+                    </label>
+                    <label>
+                        <span class="sr-only">Maximum amount</span>
+                        <input id="maxAmount" type="number" min="0"
+                               step="0.01" placeholder="Maximum ₹">
+                    </label>
+                    <button class="primary compact" type="submit">Search</button>
+                    <button id="clear-search" class="secondary compact"
+                            type="button">Clear</button>
+                </form>
+            </div>
+
+            <div class="table-scroll">
+                <table class="transaction-table">
+                    <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Account</th>
+                        <th>Payee</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Alert</th>
+                        <th>Transaction time</th>
+                    </tr>
+                    </thead>
+                    <tbody id="transactions">
+                    <tr><td colspan="7" class="empty">Loading transactions...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav class="pagination" aria-label="Transaction pages">
+                <button id="previous-page" class="secondary compact" type="button" disabled>Previous</button>
+                <span id="page-status">Page 1 of 1</span>
+                <button id="next-page" class="secondary compact" type="button" disabled>Next</button>
+            </nav>
+        </section>
+
+        <section id="alerts-section" class="panel data-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">CURRENT</p>
+                    <h2>Current alerts</h2>
+                </div>
+                <p class="heading-note">
+                    Open, acknowledged and investigating alerts.
+                </p>
+            </div>
+
+            <div class="table-scroll">
+                <table class="alert-table">
+                    <thead>
+                    <tr>
+                        <th>Rule</th>
+                        <th>Account</th>
+                        <th>Transaction IDs</th>
+                        <th>Created</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="current-alerts">
+                    <tr><td colspan="7" class="empty">Loading current alerts...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav class="pagination" aria-label="Current alert pages">
+                <button id="current-alerts-previous" class="secondary compact"
+                        type="button" disabled>Previous</button>
+                <span id="current-alerts-page">Page 1 of 1</span>
+                <button id="current-alerts-next" class="secondary compact"
+                        type="button" disabled>Next</button>
+            </nav>
+        </section>
+
+        <section id="alert-history-section" class="panel data-panel history-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">RESOLVED</p>
+                    <h2>Alert history</h2>
+                </div>
+                <p class="heading-note">Closed and dismissed alerts.</p>
+            </div>
+
+            <div class="table-scroll">
+                <table class="alert-table">
+                    <thead>
+                    <tr>
+                        <th>Rule</th>
+                        <th>Account</th>
+                        <th>Transaction IDs</th>
+                        <th>Created</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="alert-history">
+                    <tr><td colspan="7" class="empty">No alert history yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav class="pagination" aria-label="Alert history pages">
+                <button id="alert-history-previous" class="secondary compact"
+                        type="button" disabled>Previous</button>
+                <span id="alert-history-page">Page 1 of 1</span>
+                <button id="alert-history-next" class="secondary compact"
+                        type="button" disabled>Next</button>
+            </nav>
+        </section>
+
+        <footer class="site-footer">
+            <span>© <span id="footer-year">2026</span> SecureFlow</span>
+        </footer>
+    </main>
+</div>
 
 <dialog id="alert-dialog">
-    <button id="close-dialog" class="close" type="button">Close</button>
+    <div class="dialog-heading">
+        <div>
+            <p class="eyebrow">ALERT INVESTIGATION</p>
+            <h2>Alert details</h2>
+        </div>
+        <button id="close-dialog" class="close" type="button"
+                aria-label="Close alert details">×</button>
+    </div>
     <div id="alert-details"></div>
 </dialog>
 
