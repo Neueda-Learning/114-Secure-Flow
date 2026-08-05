@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 public record DashboardResponse(
         long activeAlertCount,
-        long transactionCountToday,
-        long alertsToday,
-        BigDecimal transactionVolumeToday
+        long transactionCount,
+        long alertCount,
+        BigDecimal transactionVolume
 ) {}

@@ -48,6 +48,16 @@ The first command checks the Compose file. The second command:
 
 Open http://localhost:8080.
 
+Compose loads a presentation dataset when the database is empty. Every manual
+request adds a fresh batch with current timestamps:
+
+~~~bash
+curl -X POST http://localhost:8080/api/demo/seed
+~~~
+
+To start without demo data, change `DEMO_SEED_ON_STARTUP` to `false` in
+**compose.yaml**.
+
 ## Check status
 
 ~~~bash
@@ -105,7 +115,8 @@ Warning: this deletes all saved SecureFlow data.
 docker compose down --volumes
 ~~~
 
-The next start creates an empty MySQL database and Flyway creates fresh tables.
+The next start creates a new MySQL database, Flyway creates fresh tables, and
+the configured startup seeder loads the presentation dataset.
 
 ## Published image
 

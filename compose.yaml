@@ -27,6 +27,7 @@ services:
       DB_URL: jdbc:mysql://database:3306/secureflow?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       DB_USERNAME: secureflow
       DB_PASSWORD: ${DB_PASSWORD:-secureflow123}
+      DEMO_SEED_ON_STARTUP: "true"
     ports:
       - "127.0.0.1:8080:8080"
 

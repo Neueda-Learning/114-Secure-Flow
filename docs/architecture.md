@@ -118,7 +118,7 @@ use H2 in MySQL compatibility mode and run the same Flyway migration.
 | transaction | Transaction API, persistence, search, and DTOs |
 | monitoring | Three checks and rule-definition endpoint |
 | alert | Alert persistence, lifecycle, detail, and DTOs |
-| dashboard | IST-day summary calculations |
+| dashboard | All-time totals and active-alert count |
 | common | API error format and page response |
 | config | Typed monitoring configuration |
 
@@ -128,8 +128,8 @@ Transactions use **Instant.now()**, which represents an unambiguous UTC instant.
 The database and JSON handling use UTC. The browser formats timestamps in
 Asia/Kolkata.
 
-Dashboard "today" is calculated from midnight to midnight in Asia/Kolkata and
-then converted to UTC instants for database queries.
+Dashboard totals cover all saved transactions and alerts. Active alerts count
+only OPEN, ACKNOWLEDGED, and INVESTIGATING records.
 
 ## Deliberate simplifications
 
