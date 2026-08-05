@@ -2,81 +2,104 @@ package com.neueda.secureflow.alert;
 
 import com.neueda.secureflow.alert.dto.AlertDetailResponse;
 import com.neueda.secureflow.alert.dto.AlertSummaryResponse;
-import com.neueda.secureflow.common.BadRequestException;
+import com.neueda.secureflow.common.ApiException;
 import com.neueda.secureflow.common.PageResponse;
-import com.neueda.secureflow.common.ResourceNotFoundException;
-import com.neueda.secureflow.monitoring.RuleMatch;
-import java.time.Clock;
+import com.neueda.secureflow.monitoring.RuleType;
+import com.neueda.secureflow.transaction.TransactionEntity;
 import java.time.Instant;
-import java.util.Map;
-import java.util.Set;
+import java.util.Collection;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class AlertService {
-    private static final Map<AlertStatus, Set<AlertStatus>> ALLOWED_TRANSITIONS = Map.of(
-            AlertStatus.OPEN, Set.of(AlertStatus.ACKNOWLEDGED),
-            AlertStatus.ACKNOWLEDGED, Set.of(AlertStatus.INVESTIGATING, AlertStatus.DISMISSED),
-            AlertStatus.INVESTIGATING, Set.of(AlertStatus.CLOSED, AlertStatus.DISMISSED),
-            AlertStatus.CLOSED, Set.of(),
-            AlertStatus.DISMISSED, Set.of()
-    );
-
     private final AlertRepository repository;
-    private final Clock clock;
 
-    @Autowired
     public AlertService(AlertRepository repository) {
-        this(repository, Clock.systemUTC());
-    }
-
-    AlertService(AlertRepository repository, Clock clock) {
         this.repository = repository;
-        this.clock = clock;
     }
 
-    @Transactional
-    public AlertEntity create(RuleMatch match) {
-        return repository.save(new AlertEntity(match.ruleType(), match.ruleName(), match.severity(),
-                match.message(), match.accountId(), clock.instant(), match.transactions()));
+    public AlertEntity create(
+            RuleType ruleType,
+            String ruleName,
+            AlertSeverity severity,
+            String message,
+            String accountId,
+            Collection<TransactionEntity> transactions) {
+
+        AlertEntity alert = new AlertEntity(
+                ruleType, ruleName, severity, message,
+                accountId, Instant.now(), transactions);
+        return repository.save(alert);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<AlertSummaryResponse> search(AlertStatus status, AlertSeverity severity, int page, int size) {
-        var pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(Sort.Direction.DESC, "createdAt"));
-        var result = repository.findAll(AlertSpecifications.withFilters(status, severity), pageable);
-        return PageResponse.from(result, AlertMapper::toSummary);
+    public PageResponse<AlertSummaryResponse> search(
+            AlertStatus status, AlertSeverity severity, int page, int size) {
+
+        PageRequest request = PageRequest.of(
+                page, Math.min(size, 100), Sort.by("createdAt").descending());
+
+        return PageResponse.from(
+                repository.search(status, severity, request).map(AlertSummaryResponse::from));
     }
 
     @Transactional(readOnly = true)
     public AlertDetailResponse get(long id) {
-        return AlertMapper.toDetail(find(id));
+        return AlertDetailResponse.from(find(id));
     }
 
     @Transactional
-    public AlertDetailResponse transition(long id, AlertStatus target, String resolutionNotes) {
+    public AlertDetailResponse updateStatus(
+            long id, AlertStatus nextStatus, String resolutionNotes) {
+
         AlertEntity alert = find(id);
-        if (!ALLOWED_TRANSITIONS.get(alert.getStatus()).contains(target)) {
-            throw new InvalidAlertTransitionException(
-                    "Cannot move alert from " + alert.getStatus() + " to " + target);
+
+        if (!isAllowed(alert.getStatus(), nextStatus)) {
+            throw new ApiException(
+                    HttpStatus.CONFLICT,
+                    "Invalid alert transition",
+                    "Cannot move alert from " + alert.getStatus() + " to " + nextStatus);
         }
 
-        String notes = resolutionNotes == null ? null : resolutionNotes.trim();
-        if ((target == AlertStatus.CLOSED || target == AlertStatus.DISMISSED)
-                && (notes == null || notes.length() < 3)) {
-            throw new BadRequestException("Resolution notes of at least 3 characters are required");
+        String notes = clean(resolutionNotes);
+        boolean isFinished = nextStatus == AlertStatus.CLOSED
+                || nextStatus == AlertStatus.DISMISSED;
+
+        if (isFinished && (notes == null || notes.length() < 3)) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid request",
+                    "Resolution notes of at least 3 characters are required");
         }
 
-        alert.transitionTo(target, clock.instant(), notes);
-        return AlertMapper.toDetail(repository.save(alert));
+        alert.changeStatus(nextStatus, notes, Instant.now());
+        return AlertDetailResponse.from(repository.save(alert));
     }
 
     private AlertEntity find(long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Alert " + id + " was not found"));
+        return repository.findById(id).orElseThrow(() ->
+                new ApiException(
+                        HttpStatus.NOT_FOUND,
+                        "Resource not found",
+                        "Alert " + id + " was not found"));
+    }
+
+    private boolean isAllowed(AlertStatus current, AlertStatus next) {
+        return switch (current) {
+            case OPEN -> next == AlertStatus.ACKNOWLEDGED;
+            case ACKNOWLEDGED ->
+                    next == AlertStatus.INVESTIGATING || next == AlertStatus.DISMISSED;
+            case INVESTIGATING ->
+                    next == AlertStatus.CLOSED || next == AlertStatus.DISMISSED;
+            case CLOSED, DISMISSED -> false;
+        };
+    }
+
+    private String clean(String text) {
+        return text == null || text.isBlank() ? null : text.trim();
     }
 }

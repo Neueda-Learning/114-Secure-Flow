@@ -1,12 +1,21 @@
 package com.neueda.secureflow.common;
 
 import java.util.List;
-import java.util.function.Function;
 import org.springframework.data.domain.Page;
 
-public record PageResponse<T>(List<T> items, int page, int size, long totalItems, int totalPages) {
-    public static <S, T> PageResponse<T> from(Page<S> source, Function<S, T> mapper) {
-        return new PageResponse<>(source.getContent().stream().map(mapper).toList(),
-                source.getNumber(), source.getSize(), source.getTotalElements(), source.getTotalPages());
+public record PageResponse<T>(
+        List<T> items,
+        int page,
+        int size,
+        long totalItems,
+        int totalPages
+) {
+    public static <T> PageResponse<T> from(Page<T> page) {
+        return new PageResponse<>(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages());
     }
 }

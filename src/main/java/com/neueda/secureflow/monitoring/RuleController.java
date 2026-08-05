@@ -1,8 +1,8 @@
 package com.neueda.secureflow.monitoring;
 
 import com.neueda.secureflow.alert.AlertSeverity;
-import com.neueda.secureflow.config.MonitoringProperties;
-import com.neueda.secureflow.monitoring.dto.RuleDefinitionResponse;
+import com.neueda.secureflow.config.RulesConfig;
+import com.neueda.secureflow.monitoring.dto.RuleResponse;
 import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,28 +12,37 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/rules")
 public class RuleController {
-    private final MonitoringProperties properties;
+    private final RulesConfig rules;
 
-    public RuleController(MonitoringProperties properties) {
-        this.properties = properties;
+    public RuleController(RulesConfig rules) {
+        this.rules = rules;
     }
 
     @GetMapping
-    public List<RuleDefinitionResponse> list() {
+    public List<RuleResponse> getRules() {
         return List.of(
-                new RuleDefinitionResponse(RuleType.AMOUNT_THRESHOLD, "High amount transaction",
-                        properties.amount().enabled(), AlertSeverity.HIGH,
-                        "Alerts when one transaction exceeds the configured amount.",
-                        Map.of("threshold", properties.amount().threshold(),
-                                "currency", properties.amount().currency())),
-                new RuleDefinitionResponse(RuleType.VELOCITY, "Rapid transaction velocity",
-                        properties.velocity().enabled(), AlertSeverity.HIGH,
-                        "Alerts when too many transactions occur for one account in a rolling window.",
-                        Map.of("maximumTransactions", properties.velocity().maximumTransactions(),
-                                "windowMinutes", properties.velocity().windowMinutes())),
-                new RuleDefinitionResponse(RuleType.NEW_PAYEE, "New payee detected",
-                        properties.newPayee().enabled(), AlertSeverity.MEDIUM,
-                        "Alerts on the first transaction from an account to a payee.", Map.of())
-        );
+                new RuleResponse(
+                        RuleType.AMOUNT_THRESHOLD,
+                        "High amount transaction",
+                        true,
+                        AlertSeverity.HIGH,
+                        "One transaction is above the amount limit.",
+                        Map.of("threshold", rules.amountLimit(), "currency", rules.currency())),
+                new RuleResponse(
+                        RuleType.VELOCITY,
+                        "Rapid transaction velocity",
+                        true,
+                        AlertSeverity.HIGH,
+                        "Too many transactions happen in a short time.",
+                        Map.of(
+                                "maximumTransactions", rules.maxTransactions(),
+                                "windowMinutes", rules.windowMinutes())),
+                new RuleResponse(
+                        RuleType.NEW_PAYEE,
+                        "New payee detected",
+                        true,
+                        AlertSeverity.MEDIUM,
+                        "An account sends money to a payee for the first time.",
+                        Map.of()));
     }
 }

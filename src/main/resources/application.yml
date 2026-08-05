@@ -4,42 +4,21 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/secureflow?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: ${DB_USERNAME:secureflow}
-    password: ${DB_PASSWORD:}
+    password: ${DB_PASSWORD:secureflow123}
   jpa:
     hibernate:
       ddl-auto: validate
     open-in-view: false
     properties:
-      hibernate:
-        jdbc:
-          time_zone: UTC
-  flyway:
-    enabled: true
+      hibernate.jdbc.time_zone: UTC
   jackson:
     time-zone: UTC
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      show-details: never
-
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
+management.endpoints.web.exposure.include: health,info
+springdoc.swagger-ui.path: /swagger-ui.html
 
 monitoring:
-  rules:
-    amount:
-      enabled: true
-      threshold: 10000.00
-      currency: INR
-    velocity:
-      enabled: true
-      maximum-transactions: 5
-      window-minutes: 10
-    new-payee:
-      enabled: true
+  amount-limit: 10000.00
+  currency: INR
+  max-transactions: 5
+  window-minutes: 10

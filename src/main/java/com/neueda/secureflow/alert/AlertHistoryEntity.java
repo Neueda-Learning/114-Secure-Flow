@@ -17,7 +17,7 @@ import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "alert_status_history")
-public class AlertStatusHistoryEntity {
+public class AlertHistoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -42,10 +42,11 @@ public class AlertStatusHistoryEntity {
     @Column(length = 500)
     private String note;
 
-    protected AlertStatusHistoryEntity() {}
+    protected AlertHistoryEntity() {
+    }
 
-    AlertStatusHistoryEntity(AlertEntity alert, AlertStatus previousStatus, AlertStatus newStatus,
-                             Instant changedAt, String note) {
+    public AlertHistoryEntity(AlertEntity alert, AlertStatus previousStatus,
+                              AlertStatus newStatus, Instant changedAt, String note) {
         this.alert = alert;
         this.previousStatus = previousStatus;
         this.newStatus = newStatus;
@@ -53,7 +54,6 @@ public class AlertStatusHistoryEntity {
         this.note = note;
     }
 
-    public Long getId() { return id; }
     public AlertStatus getPreviousStatus() { return previousStatus; }
     public AlertStatus getNewStatus() { return newStatus; }
     public Instant getChangedAt() { return changedAt; }
