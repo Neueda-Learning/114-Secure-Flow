@@ -1,11 +1,21 @@
 (function () {
     "use strict";
 
-    const state = { alerts: [], transactions: [], rules: [], alertFilter: "ALL", pendingResolution: null };
+    const state = {
+        alerts: [],
+        transactions: [],
+        rules: [],
+        summary: null,
+        alertFilter: "ALL",
+        pendingResolution: null,
+        activeChart: null,
+        chartExpanded: false
+    };
     const activeStatuses = ["OPEN", "ACKNOWLEDGED", "INVESTIGATING"];
     const finalStatuses = ["CLOSED", "DISMISSED"];
     const INDIA_TIME_ZONE = "Asia/Kolkata";
     const filterIds = ["transaction-search", "min-amount", "max-amount", "from-time", "to-time"];
+    const chartOptionIds = ["transactions-hour", "alerts-rule", "alerts-status", "alerts-severity", "amount-buckets"];
     const transactionModal = document.getElementById("transaction-modal");
     const alertModal = document.getElementById("alert-modal");
     const resolutionModal = document.getElementById("resolution-modal");
@@ -117,6 +127,7 @@
     }
 
     function renderSummary(summary) {
+        state.summary = summary;
         document.getElementById("active-alert-count").textContent = summary.activeAlertCount;
         document.getElementById("transaction-count").textContent = summary.transactionCountToday;
         document.getElementById("alert-count").textContent = summary.alertsToday;
@@ -167,6 +178,163 @@
         document.getElementById("rules-grid").innerHTML = state.rules.map((rule, index) => `<article class="rule-card ${rule.severity.toLowerCase()}"><div class="rule-number">0${index + 1}</div>${badge(rule.severity)}<h2>${escapeHtml(rule.name)}</h2><p>${escapeHtml(ruleSetting(rule))}</p><div class="rule-meta"><span>Evaluation: synchronous</span><b>● ACTIVE</b></div></article>`).join("");
     }
 
+    function countBy(items, keySelector) {
+        const map = new Map();
+        items.forEach(item => {
+            const key = keySelector(item);
+            map.set(key, (map.get(key) || 0) + 1);
+        });
+        return map;
+    }
+
+    function hourLabel(isoTime) {
+        if (!isoTime) return "Unknown";
+        return new Intl.DateTimeFormat("en-IN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: INDIA_TIME_ZONE
+        }).format(new Date(isoTime));
+    }
+
+    function cssSafeLabel(label) {
+        return String(label).toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    }
+
+    function makeRowsFromMap(map, valueFormatter = value => String(value)) {
+        const rows = Array.from(map.entries()).map(([label, value]) => ({
+            label,
+            value,
+            display: valueFormatter(value),
+            className: cssSafeLabel(label)
+        }));
+        return rows.sort((left, right) => right.value - left.value);
+    }
+
+    function renderBarChart(rows, emptyMessage) {
+        if (!rows.length) {
+            return { html: `<p class="empty">${escapeHtml(emptyMessage)}</p>`, legend: [] };
+        }
+        const max = Math.max(...rows.map(row => row.value), 1);
+        const html = `<ol class="chart-bars">${rows.map(row => {
+            const percent = Math.max(4, Math.round((row.value / max) * 100));
+            return `<li class="chart-row"><span class="chart-label">${escapeHtml(row.label)}</span><span class="chart-track"><span class="chart-fill ${escapeHtml(row.className)}" style="width:${percent}%"></span></span><span class="chart-value">${escapeHtml(row.display)}</span></li>`;
+        }).join("")}</ol>`;
+        return { html, legend: rows.slice(0, 5) };
+    }
+
+    function buildChartModel(chartId) {
+        if (chartId === "transactions-hour") {
+            const hourly = countBy(state.transactions, item => hourLabel(item.transactionTime));
+            const rows = makeRowsFromMap(hourly, value => `${value} txn`);
+            return {
+                title: "Transactions by hour (IST)",
+                subtitle: "Based on currently loaded transaction rows.",
+                ...renderBarChart(rows, "No transaction data is available for charting.")
+            };
+        }
+        if (chartId === "alerts-rule") {
+            const byRule = countBy(state.alerts, alert => alert.ruleName || "Unknown rule");
+            const rows = makeRowsFromMap(byRule, value => `${value} alerts`);
+            return {
+                title: "Alerts by rule",
+                subtitle: "Compares how many alerts each rule produced.",
+                ...renderBarChart(rows, "No alert data is available for charting.")
+            };
+        }
+        if (chartId === "alerts-status") {
+            const byStatus = countBy(state.alerts, alert => String(alert.status || "UNKNOWN").replaceAll("_", " "));
+            const rows = makeRowsFromMap(byStatus, value => `${value} alerts`);
+            return {
+                title: "Alert status mix",
+                subtitle: "Tracks operational workload across investigation states.",
+                ...renderBarChart(rows, "No alert statuses found yet.")
+            };
+        }
+        if (chartId === "alerts-severity") {
+            const bySeverity = countBy(state.alerts, alert => alert.severity || "UNKNOWN");
+            const rows = makeRowsFromMap(bySeverity, value => `${value} alerts`);
+            return {
+                title: "Alert severity mix",
+                subtitle: "Shows current HIGH vs MEDIUM alert balance.",
+                ...renderBarChart(rows, "No alert severities found yet.")
+            };
+        }
+        if (chartId === "amount-buckets") {
+            const buckets = new Map([
+                ["0-1K", 0],
+                ["1K-5K", 0],
+                ["5K-10K", 0],
+                ["10K+", 0]
+            ]);
+            state.transactions.forEach(item => {
+                const amount = Number(item.amount || 0);
+                if (amount < 1000) buckets.set("0-1K", buckets.get("0-1K") + 1);
+                else if (amount < 5000) buckets.set("1K-5K", buckets.get("1K-5K") + 1);
+                else if (amount < 10000) buckets.set("5K-10K", buckets.get("5K-10K") + 1);
+                else buckets.set("10K+", buckets.get("10K+") + 1);
+            });
+            const rows = makeRowsFromMap(buckets, value => `${value} txn`);
+            return {
+                title: "Transaction amount buckets",
+                subtitle: "Distribution by payment size from current transaction feed.",
+                ...renderBarChart(rows, "No transaction amounts are available yet.")
+            };
+        }
+        return {
+            title: "Choose a chart",
+            subtitle: "Select an option above to expand chart details.",
+            html: '<p class="empty">No chart selected yet.</p>',
+            legend: []
+        };
+    }
+
+    function renderLegend(rows) {
+        if (!rows.length) return "";
+        return rows.map(row => `<span class="legend-chip"><i class="legend-dot ${escapeHtml(row.className)}"></i>${escapeHtml(row.label)}</span>`).join("");
+    }
+
+    function renderChartExplorer() {
+        const stage = document.getElementById("chart-stage");
+        const title = document.getElementById("chart-stage-title");
+        const subtitle = document.getElementById("chart-stage-subtitle");
+        const plot = document.getElementById("chart-plot");
+        const legend = document.getElementById("chart-legend");
+        const buttons = document.querySelectorAll("[data-chart-option]");
+
+        buttons.forEach(button => {
+            const isActive = state.chartExpanded && button.dataset.chartOption === state.activeChart;
+            button.classList.toggle("active", isActive);
+            button.setAttribute("aria-selected", String(isActive));
+            button.setAttribute("aria-expanded", String(isActive));
+        });
+
+        stage.classList.toggle("expanded", state.chartExpanded);
+        if (!state.chartExpanded || !state.activeChart) {
+            title.textContent = "Choose a chart";
+            subtitle.textContent = "Select an option above to expand chart details.";
+            plot.innerHTML = '<p class="empty">No chart selected yet.</p>';
+            legend.innerHTML = "";
+            return;
+        }
+
+        const model = buildChartModel(state.activeChart);
+        title.textContent = model.title;
+        subtitle.textContent = model.subtitle;
+        plot.innerHTML = model.html;
+        legend.innerHTML = renderLegend(model.legend || []);
+    }
+
+    function toggleChart(chartId) {
+        if (state.activeChart === chartId && state.chartExpanded) {
+            state.chartExpanded = false;
+        } else {
+            state.activeChart = chartId;
+            state.chartExpanded = true;
+        }
+        renderChartExplorer();
+    }
+
     async function loadDashboard() {
         try {
             const [summary, alertPage, transactionPage, rules] = await Promise.all([
@@ -181,6 +349,7 @@
             renderAlerts();
             renderTransactions(transactionPage);
             renderRules();
+            renderChartExplorer();
             clearMessage();
         } catch (error) {
             showMessage(`Dashboard data could not be loaded. ${error.message}`, "error");
@@ -257,6 +426,11 @@
             showView(nav.dataset.view || nav.dataset.go || nav.dataset.viewLink);
             return;
         }
+        const chartOption = event.target.closest("[data-chart-option]");
+        if (chartOption) {
+            toggleChart(chartOption.dataset.chartOption);
+            return;
+        }
         if (event.target.closest("[data-open-transaction]")) {
             openDialog(transactionModal);
             document.getElementById("accountId").focus();
@@ -310,6 +484,23 @@
         document.getElementById("sidebar").classList.remove("open");
         document.getElementById("sidebar-scrim").classList.remove("show");
     });
+    document.querySelector(".chart-options")?.addEventListener("keydown", event => {
+        if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
+        const buttons = chartOptionIds
+            .map(id => document.querySelector(`[data-chart-option="${id}"]`))
+            .filter(Boolean);
+        if (!buttons.length) return;
+
+        event.preventDefault();
+        const index = buttons.indexOf(document.activeElement);
+        const current = index === -1 ? 0 : index;
+        let target = current;
+        if (event.key === "ArrowRight") target = (current + 1) % buttons.length;
+        if (event.key === "ArrowLeft") target = (current - 1 + buttons.length) % buttons.length;
+        if (event.key === "Home") target = 0;
+        if (event.key === "End") target = buttons.length - 1;
+        buttons[target].focus();
+    });
     window.addEventListener("secureflow:refresh", async () => {
         closeDialog(transactionModal);
         toast("Transaction submitted and evaluated successfully.");
@@ -326,5 +517,8 @@
     window.setInterval(updateLiveClock, 1000);
     const initialView = location.hash.slice(1);
     if (document.querySelector(`[data-view-panel="${initialView}"]`)) showView(initialView);
+    state.activeChart = "transactions-hour";
+    state.chartExpanded = false;
+    renderChartExplorer();
     loadDashboard();
 })();

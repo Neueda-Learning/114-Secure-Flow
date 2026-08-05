@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="SecureFlow India transaction monitoring dashboard">
     <title>SecureFlow | Transaction Monitoring</title>
-    <link rel="stylesheet" href="/styles.css?v=live-inr-1">
+    <link rel="stylesheet" href="./styles.css?v=live-inr-1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -52,6 +52,32 @@
                 <article class="summary-card"><div class="card-icon">⌁</div><div><span>Alerts today</span><strong id="alert-count">—</strong><small>Across three rules</small></div></article>
                 <article class="summary-card"><div class="card-icon">₹</div><div><span>Volume today</span><strong id="transaction-volume">—</strong><small>Total monitored value</small></div></article>
             </div>
+
+            <section class="panel chart-switcher" aria-labelledby="charts-title">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">VISUAL INSIGHTS</p>
+                        <h2 id="charts-title">Chart explorer</h2>
+                    </div>
+                </div>
+                <div class="chart-options" role="tablist" aria-label="Chart options">
+                    <button class="chart-option" type="button" data-chart-option="transactions-hour" role="tab" aria-selected="false" aria-controls="chart-stage">Transactions by hour</button>
+                    <button class="chart-option" type="button" data-chart-option="alerts-rule" role="tab" aria-selected="false" aria-controls="chart-stage">Alerts by rule</button>
+                    <button class="chart-option" type="button" data-chart-option="alerts-status" role="tab" aria-selected="false" aria-controls="chart-stage">Alert status mix</button>
+                    <button class="chart-option" type="button" data-chart-option="alerts-severity" role="tab" aria-selected="false" aria-controls="chart-stage">Alert severity mix</button>
+                    <button class="chart-option" type="button" data-chart-option="amount-buckets" role="tab" aria-selected="false" aria-controls="chart-stage">Amount buckets</button>
+                </div>
+                <div class="chart-stage" id="chart-stage" aria-live="polite">
+                    <div class="chart-stage-header">
+                        <h3 id="chart-stage-title">Choose a chart</h3>
+                        <p id="chart-stage-subtitle">Select an option above to expand chart details.</p>
+                    </div>
+                    <div class="chart-plot" id="chart-plot">
+                        <p class="empty">No chart selected yet.</p>
+                    </div>
+                    <div class="chart-legend" id="chart-legend"></div>
+                </div>
+            </section>
 
             <div class="overview-grid">
                 <section class="panel span-two" aria-labelledby="overview-alerts-title">
