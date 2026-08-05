@@ -71,6 +71,7 @@ public class TransactionService {
     @Transactional(readOnly = true)
     public PageResponse<TransactionResponse> search(
             String search,
+            Long transactionId,
             BigDecimal minAmount,
             BigDecimal maxAmount,
             Instant from,
@@ -100,7 +101,8 @@ public class TransactionService {
 
         return PageResponse.from(
                 repository.search(
-                                clean(search), minAmount, maxAmount, from, to, request)
+                                clean(search), transactionId, minAmount, maxAmount,
+                                from, to, request)
                         .map(TransactionResponse::from));
     }
 

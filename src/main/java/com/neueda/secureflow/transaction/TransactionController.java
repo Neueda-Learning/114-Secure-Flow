@@ -40,6 +40,7 @@ public class TransactionController {
     @GetMapping
     public PageResponse<TransactionResponse> search(
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) @Min(1) Long transactionId,
             @RequestParam(required = false) BigDecimal minAmount,
             @RequestParam(required = false) BigDecimal maxAmount,
             @RequestParam(required = false)
@@ -49,6 +50,6 @@ public class TransactionController {
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return service.search(
-                search, minAmount, maxAmount, from, to, page, size);
+                search, transactionId, minAmount, maxAmount, from, to, page, size);
     }
 }

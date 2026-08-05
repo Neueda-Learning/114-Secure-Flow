@@ -129,7 +129,7 @@ class SecureFlowTest {
 
         mockMvc.perform(post("/api/transactions")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(transactionWithCurrency("A", "B", "10", "EUR")))
+                        .content(transactionWithCurrency("ACC", "PAY", "10", "EUR")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Invalid request"));
 
@@ -160,7 +160,7 @@ class SecureFlowTest {
 
         mockMvc.perform(get("/api/dashboard/summary"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.transactionCountToday").value(1))
+                .andExpect(jsonPath("$.transactionCount").value(1))
                 .andExpect(jsonPath("$.activeAlertCount").value(2));
 
         mockMvc.perform(get("/api/rules"))
@@ -174,7 +174,33 @@ class SecureFlowTest {
         mockMvc.perform(get("/index.html"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(
-                        org.hamcrest.Matchers.containsString("SecureFlow")));
+                        org.hamcrest.Matchers.containsString("SecureFlow")))
+                .andExpect(content().string(
+                        org.hamcrest.Matchers.containsString("Current alerts")))
+                .andExpect(content().string(
+                        org.hamcrest.Matchers.containsString("Alert history")))
+                .andExpect(content().string(
+                        org.hamcrest.Matchers.containsString("Description")));
+    }
+
+    @Test
+    void eachDemoRequestAddsAFreshBatch() throws Exception {
+        mockMvc.perform(post("/api/demo/seed"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.transactionsCreated").value(20))
+                .andExpect(jsonPath("$.alertsCreated").value(12))
+                .andExpect(jsonPath("$.skipped").value(false));
+
+        mockMvc.perform(post("/api/demo/seed"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.transactionsCreated").value(20))
+                .andExpect(jsonPath("$.alertsCreated").value(12))
+                .andExpect(jsonPath("$.skipped").value(false));
+
+        mockMvc.perform(get("/api/dashboard/summary"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.transactionCount").value(40))
+                .andExpect(jsonPath("$.activeAlertCount").value(24));
     }
 
     private void changeStatus(Number id, String status, String notes, int expected)

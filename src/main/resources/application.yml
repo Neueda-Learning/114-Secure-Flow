@@ -22,3 +22,6 @@ monitoring:
   currency: INR
   max-transactions: 5
   window-minutes: 10
+
+demo:
+  seed-on-startup: ${DEMO_SEED_ON_STARTUP:false}

@@ -12,7 +12,7 @@
 
 <header class="topbar">
     <a class="brand" href="#overview" aria-label="SecureFlow home">
-        <span class="brand-symbol" aria-hidden="true"></span>
+        <span class="brand-accent" aria-hidden="true"></span>
         <span>
             <strong>SecureFlow</strong>
             <small>Transaction monitoring</small>
@@ -20,8 +20,10 @@
     </a>
 
     <div class="topbar-actions">
-        <span id="health" class="health-pill">Checking system...</span>
-        <a class="api-link" href="/swagger-ui.html">API documentation</a>
+        <div class="live-clock" aria-label="Current date and time">
+            <span id="live-date">Loading current date...</span>
+            <strong id="live-time">--:--:--</strong>
+        </div>
     </div>
 </header>
 
@@ -30,72 +32,56 @@
         <nav>
             <p class="nav-label">Monitoring</p>
             <a class="nav-link active" href="#overview"><span aria-hidden="true">▦</span>Overview</a>
-            <a class="nav-link" href="#transaction-entry"><span aria-hidden="true">＋</span>New transaction</a>
+            <a class="nav-link" href="#transaction-entry"><span aria-hidden="true">＋</span>Transaction entry</a>
             <a class="nav-link" href="#transactions-section"><span aria-hidden="true">↔</span>Transactions</a>
-            <a class="nav-link" href="#alerts-section"><span aria-hidden="true">!</span>Alerts</a>
+            <a id="alerts-nav" class="nav-link nav-alerts" href="#alerts-section">
+                <span aria-hidden="true">!</span><span>Alerts</span>
+                <strong id="sidebar-alert-count" class="nav-count">0</strong>
+            </a>
+            <a class="nav-link" href="#alert-history-section"><span aria-hidden="true">↺</span>Alert history</a>
 
             <p class="nav-label">Configuration</p>
             <a class="nav-link" href="#rules-section"><span aria-hidden="true">⌁</span>Monitoring rules</a>
-            <a class="nav-link" href="/swagger-ui.html"><span aria-hidden="true">{ }</span>Swagger API</a>
+            <button id="load-demo" class="nav-link nav-button" type="button">
+                <span aria-hidden="true">+</span><span id="demo-label">Add demo data</span>
+            </button>
         </nav>
-
-        <div class="desk-card">
-            <span>India monitoring desk</span>
-            <strong>INR · IST</strong>
-            <small>Three rules evaluate every transaction.</small>
-        </div>
     </aside>
 
     <main id="main-content">
         <p id="message" class="message" role="status" aria-live="polite"></p>
 
-        <section id="overview" class="hero">
-            <div>
-                <p class="eyebrow">FINANCIAL CRIME OPERATIONS</p>
-                <h1>Transaction monitoring</h1>
-                <p class="hero-copy">
-                    Review today’s payment activity, investigate alerts and keep
-                    a clear audit trail.
-                </p>
-            </div>
-            <div class="market-chip">
-                <span>Operating market</span>
-                <strong>India</strong>
-                <small>Currency INR · Time zone IST</small>
-            </div>
-        </section>
-
-        <section class="cards" aria-label="Today’s monitoring summary">
+        <section id="overview" class="cards" aria-label="Monitoring summary">
             <article class="summary-card risk">
                 <span class="card-icon" aria-hidden="true">!</span>
                 <div>
                     <span>Active alerts</span>
                     <strong id="active-alerts">—</strong>
-                    <small>Require operator review</small>
+                    <small>Requires review</small>
                 </div>
             </article>
             <article class="summary-card">
                 <span class="card-icon" aria-hidden="true">↔</span>
                 <div>
-                    <span>Transactions today</span>
-                    <strong id="transactions-today">—</strong>
-                    <small>Payments processed</small>
+                    <span>Transactions</span>
+                    <strong id="transaction-count">—</strong>
+                    <small>All recorded</small>
                 </div>
             </article>
             <article class="summary-card">
                 <span class="card-icon" aria-hidden="true">⌁</span>
                 <div>
-                    <span>Alerts today</span>
-                    <strong id="alerts-today">—</strong>
-                    <small>Across all active rules</small>
+                    <span>Alerts generated</span>
+                    <strong id="alert-count">—</strong>
+                    <small>All recorded</small>
                 </div>
             </article>
             <article class="summary-card">
                 <span class="card-icon rupee" aria-hidden="true">₹</span>
                 <div>
-                    <span>Volume today</span>
-                    <strong id="volume-today">—</strong>
-                    <small>Total monitored value</small>
+                    <span>Monitored volume</span>
+                    <strong id="transaction-volume">—</strong>
+                    <small>All recorded</small>
                 </div>
             </article>
         </section>
@@ -105,29 +91,34 @@
                 <div class="panel-heading">
                     <div>
                         <p class="eyebrow">LIVE INPUT</p>
-                        <h2>Record a transaction</h2>
+                        <h2>Submit transaction</h2>
                     </div>
-                    <span class="panel-tag">Evaluated immediately</span>
+                    <span class="panel-tag">Real-time evaluation</span>
                 </div>
                 <p class="panel-description">
-                    Enter an INR payment. SecureFlow saves it with the current
+                    Enter a payment. SecureFlow saves it with the current
                     server time and checks every monitoring rule.
                 </p>
 
                 <form id="transaction-form" class="form-grid">
                     <label>
                         <span>Account ID</span>
-                        <input id="accountId" maxlength="50"
-                               placeholder="Example: ACC-1001" required>
+                        <input id="accountId" minlength="3" maxlength="50"
+                               pattern="[A-Za-z0-9\-]{3,50}"
+                               title="Use 3–50 letters, numbers, or hyphens"
+                               placeholder="ACC-1001" required>
                     </label>
                     <label>
                         <span>Payee ID</span>
-                        <input id="payeeId" maxlength="50"
-                               placeholder="Example: PAYEE-501" required>
+                        <input id="payeeId" minlength="3" maxlength="50"
+                               pattern="[A-Za-z0-9\-]{3,50}"
+                               title="Use 3–50 letters, numbers, or hyphens"
+                               placeholder="PAYEE-501" required>
                     </label>
                     <label>
-                        <span>Amount in INR</span>
+                        <span>Amount</span>
                         <input id="amount" type="number" min="0.01" step="0.01"
+                               title="Enter an amount greater than zero"
                                placeholder="0.00" required>
                     </label>
                     <label>
@@ -136,7 +127,7 @@
                                placeholder="Payment description">
                     </label>
                     <button class="primary form-action" type="submit">
-                        Save and check rules
+                        Submit for monitoring
                     </button>
                 </form>
             </section>
@@ -169,14 +160,19 @@
                                placeholder="Search account, payee or description">
                     </label>
                     <label>
+                        <span class="sr-only">Transaction ID</span>
+                        <input id="transactionId" type="number" min="1"
+                               step="1" placeholder="Transaction ID">
+                    </label>
+                    <label>
                         <span class="sr-only">Minimum amount</span>
                         <input id="minAmount" type="number" min="0"
-                               placeholder="Minimum ₹">
+                               step="0.01" placeholder="Minimum ₹">
                     </label>
                     <label>
                         <span class="sr-only">Maximum amount</span>
                         <input id="maxAmount" type="number" min="0"
-                               placeholder="Maximum ₹">
+                               step="0.01" placeholder="Maximum ₹">
                     </label>
                     <button class="primary compact" type="submit">Search</button>
                     <button id="clear-search" class="secondary compact"
@@ -185,55 +181,106 @@
             </div>
 
             <div class="table-scroll">
-                <table>
+                <table class="transaction-table">
                     <thead>
                     <tr>
                         <th>Transaction ID</th>
                         <th>Account</th>
                         <th>Payee</th>
+                        <th>Description</th>
                         <th>Amount</th>
-                        <th>Transaction time (IST)</th>
+                        <th>Alert</th>
+                        <th>Transaction time</th>
                     </tr>
                     </thead>
                     <tbody id="transactions">
-                    <tr><td colspan="5" class="empty">Loading transactions...</td></tr>
+                    <tr><td colspan="7" class="empty">Loading transactions...</td></tr>
                     </tbody>
                 </table>
             </div>
+            <nav class="pagination" aria-label="Transaction pages">
+                <button id="previous-page" class="secondary compact" type="button" disabled>Previous</button>
+                <span id="page-status">Page 1 of 1</span>
+                <button id="next-page" class="secondary compact" type="button" disabled>Next</button>
+            </nav>
         </section>
 
         <section id="alerts-section" class="panel data-panel">
             <div class="panel-heading">
                 <div>
-                    <p class="eyebrow">INVESTIGATION QUEUE</p>
-                    <h2>Alerts</h2>
+                    <p class="eyebrow">CURRENT</p>
+                    <h2>Current alerts</h2>
                 </div>
                 <p class="heading-note">
-                    Acknowledge, investigate and resolve suspicious activity.
+                    Open, acknowledged and investigating alerts.
                 </p>
             </div>
 
             <div class="table-scroll">
-                <table>
+                <table class="alert-table">
                     <thead>
                     <tr>
                         <th>Rule</th>
                         <th>Account</th>
+                        <th>Transaction IDs</th>
+                        <th>Created</th>
                         <th>Severity</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
                     </thead>
-                    <tbody id="alerts">
-                    <tr><td colspan="5" class="empty">Loading alerts...</td></tr>
+                    <tbody id="current-alerts">
+                    <tr><td colspan="7" class="empty">Loading current alerts...</td></tr>
                     </tbody>
                 </table>
             </div>
+            <nav class="pagination" aria-label="Current alert pages">
+                <button id="current-alerts-previous" class="secondary compact"
+                        type="button" disabled>Previous</button>
+                <span id="current-alerts-page">Page 1 of 1</span>
+                <button id="current-alerts-next" class="secondary compact"
+                        type="button" disabled>Next</button>
+            </nav>
         </section>
 
-        <footer>
-            <span>SecureFlow transaction monitoring</span>
-            <span>Java 21 · Spring Boot · MySQL · Flyway</span>
+        <section id="alert-history-section" class="panel data-panel history-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">RESOLVED</p>
+                    <h2>Alert history</h2>
+                </div>
+                <p class="heading-note">Closed and dismissed alerts.</p>
+            </div>
+
+            <div class="table-scroll">
+                <table class="alert-table">
+                    <thead>
+                    <tr>
+                        <th>Rule</th>
+                        <th>Account</th>
+                        <th>Transaction IDs</th>
+                        <th>Created</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="alert-history">
+                    <tr><td colspan="7" class="empty">No alert history yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav class="pagination" aria-label="Alert history pages">
+                <button id="alert-history-previous" class="secondary compact"
+                        type="button" disabled>Previous</button>
+                <span id="alert-history-page">Page 1 of 1</span>
+                <button id="alert-history-next" class="secondary compact"
+                        type="button" disabled>Next</button>
+            </nav>
+        </section>
+
+        <footer class="site-footer">
+            <span>© <span id="footer-year">2026</span> SecureFlow</span>
         </footer>
     </main>
 </div>

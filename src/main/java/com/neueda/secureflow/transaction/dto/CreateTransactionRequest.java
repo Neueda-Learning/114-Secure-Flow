@@ -8,8 +8,16 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 public record CreateTransactionRequest(
-        @NotBlank @Size(max = 50) String accountId,
-        @NotBlank @Size(max = 50) String payeeId,
+        @NotBlank
+        @Size(min = 3, max = 50)
+        @Pattern(regexp = "[A-Za-z0-9-]+",
+                message = "must use letters, numbers, or hyphens")
+        String accountId,
+        @NotBlank
+        @Size(min = 3, max = 50)
+        @Pattern(regexp = "[A-Za-z0-9-]+",
+                message = "must use letters, numbers, or hyphens")
+        String payeeId,
         @NotNull @DecimalMin("0.01") BigDecimal amount,
         @NotBlank @Pattern(regexp = "[A-Za-z]{3}") String currency,
         @Size(max = 255) String description

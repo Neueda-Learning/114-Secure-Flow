@@ -1,6 +1,5 @@
 package com.neueda.secureflow.alert;
 
-import java.time.Instant;
 import java.util.Collection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +19,4 @@ public interface AlertRepository extends JpaRepository<AlertEntity, Long> {
             Pageable pageable);
 
     long countByStatusIn(Collection<AlertStatus> statuses);
-
-    long countByCreatedAtBetween(Instant from, Instant to);
 }

@@ -11,7 +11,8 @@ status history.
 
 ## Features
 
-- Store and search INR transactions.
+- Store and search INR transactions by text, transaction ID, or amount.
+- Validate transaction fields in both the browser and backend.
 - Use server time for new transactions and display timestamps in IST.
 - Create a HIGH alert when an amount is above INR 10,000.
 - Create a HIGH alert after more than five transactions in ten minutes.
@@ -20,6 +21,7 @@ status history.
 - Support dismissal from ACKNOWLEDGED or INVESTIGATING.
 - Keep the transactions and history linked to each alert.
 - Provide a responsive dashboard, REST API, Swagger UI, and health endpoint.
+- Add fresh presentation data with current timestamps on demand.
 - Persist production data in MySQL.
 - Verify the application with end-to-end tests and a 70% JaCoCo gate.
 
@@ -54,6 +56,30 @@ Delete the containers and all saved database data:
 docker compose down --volumes
 ~~~
 
+## Demo data for a presentation
+
+Docker loads the demo data automatically the first time the application starts.
+The sample uses the real transaction service, so it also creates realistic
+high-amount, rapid-transaction, and new-payee alerts with current timestamps.
+
+If the application is already open, click **Add demo data** in the sidebar.
+You can also run this command from Linux or WSL:
+
+~~~bash
+curl -X POST http://localhost:8080/api/demo/seed
+~~~
+
+Each click or command adds a new batch of 20 transactions and 12 alerts with
+new account references and current timestamps. This makes it useful immediately
+before a presentation. Automatic startup seeding only runs when the database is
+empty. Docker enables it with this value in **compose.yaml**:
+
+~~~yaml
+DEMO_SEED_ON_STARTUP: "true"
+~~~
+
+Set it to `false` if you want Docker to start with an empty database.
+
 The included passwords are for local learning only. Copy **.env.example** to
 **.env** and change the values before sharing a deployment. Port 8080 is bound
 to 127.0.0.1, so the default Compose setup is accessible only from the same
@@ -85,7 +111,7 @@ This one command:
 2. compiles the Java source
 3. starts the test application
 4. applies the Flyway migration to the test database
-5. runs six HTTP-level tests
+5. runs seven HTTP-level tests
 6. creates the runnable JAR
 7. creates the JaCoCo HTML report
 8. fails if measured line coverage is below 70%
@@ -118,6 +144,7 @@ The main packages are:
 - **monitoring** — amount, velocity, and new-payee checks
 - **alert** — alert creation, filtering, detail, and status changes
 - **dashboard** — summary counts and transaction volume
+- **demo** — reusable presentation data and startup loading
 - **common** — paging and consistent API errors
 - **config** — monitoring values loaded from application configuration
 
@@ -148,7 +175,8 @@ conditional block in **MonitoringService.java**.
 | GET | /api/alerts/{id} | Read alert details, transactions, and history |
 | PATCH | /api/alerts/{id}/status | Perform a valid status transition |
 | GET | /api/rules | Read the effective monitoring rules |
-| GET | /api/dashboard/summary | Read current IST-day totals |
+| GET | /api/dashboard/summary | Read all-time totals and active-alert count |
+| POST | /api/demo/seed | Load the presentation dataset once |
 | GET | /actuator/health | Check application health |
 
 Ready-to-run examples are in [API examples](docs/api-examples.http).
