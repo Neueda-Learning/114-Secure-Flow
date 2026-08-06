@@ -73,19 +73,22 @@ public class AlertEntity {
     private String resolutionNotes;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "alert_transactions",
+    @JoinTable(
+            name = "alert_transactions",
             joinColumns = @JoinColumn(name = "alert_id"),
             inverseJoinColumns = @JoinColumn(name = "transaction_id"))
-    private Set<TransactionEntity> triggeringTransactions = new LinkedHashSet<>();
+    private Set<TransactionEntity> transactions = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "alert", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("changedAt ASC")
-    private List<AlertStatusHistoryEntity> history = new ArrayList<>();
+    private List<AlertHistoryEntity> history = new ArrayList<>();
 
-    protected AlertEntity() {}
+    protected AlertEntity() {
+    }
 
-    public AlertEntity(RuleType ruleType, String ruleName, AlertSeverity severity, String message,
-                       String accountId, Instant createdAt, Collection<TransactionEntity> transactions) {
+    public AlertEntity(RuleType ruleType, String ruleName, AlertSeverity severity,
+                       String message, String accountId, Instant createdAt,
+                       Collection<TransactionEntity> transactions) {
         this.ruleType = ruleType;
         this.ruleName = ruleName;
         this.severity = severity;
@@ -93,12 +96,27 @@ public class AlertEntity {
         this.message = message;
         this.accountId = accountId;
         this.createdAt = createdAt;
-        this.triggeringTransactions.addAll(transactions);
-        addHistory(null, AlertStatus.OPEN, createdAt, "Alert generated automatically");
+        this.transactions.addAll(transactions);
+        this.history.add(new AlertHistoryEntity(
+                this, null, AlertStatus.OPEN, createdAt, "Alert generated automatically"));
     }
 
-    public void addHistory(AlertStatus previous, AlertStatus next, Instant changedAt, String note) {
-        history.add(new AlertStatusHistoryEntity(this, previous, next, changedAt, note));
+    public void changeStatus(AlertStatus nextStatus, String notes, Instant time) {
+        AlertStatus oldStatus = status;
+        status = nextStatus;
+
+        if (nextStatus == AlertStatus.ACKNOWLEDGED) {
+            acknowledgedAt = time;
+        }
+        if (nextStatus == AlertStatus.INVESTIGATING) {
+            investigatingAt = time;
+        }
+        if (nextStatus == AlertStatus.CLOSED || nextStatus == AlertStatus.DISMISSED) {
+            closedAt = time;
+            resolutionNotes = notes;
+        }
+
+        history.add(new AlertHistoryEntity(this, oldStatus, nextStatus, time, notes));
     }
 
     public Long getId() { return id; }
@@ -113,18 +131,6 @@ public class AlertEntity {
     public Instant getInvestigatingAt() { return investigatingAt; }
     public Instant getClosedAt() { return closedAt; }
     public String getResolutionNotes() { return resolutionNotes; }
-    public Set<TransactionEntity> getTriggeringTransactions() { return triggeringTransactions; }
-    public List<AlertStatusHistoryEntity> getHistory() { return history; }
-
-    public void transitionTo(AlertStatus next, Instant changedAt, String notes) {
-        AlertStatus previous = this.status;
-        this.status = next;
-        if (next == AlertStatus.ACKNOWLEDGED) this.acknowledgedAt = changedAt;
-        if (next == AlertStatus.INVESTIGATING) this.investigatingAt = changedAt;
-        if (next == AlertStatus.CLOSED || next == AlertStatus.DISMISSED) {
-            this.closedAt = changedAt;
-            this.resolutionNotes = notes;
-        }
-        addHistory(previous, next, changedAt, notes);
-    }
+    public Set<TransactionEntity> getTransactions() { return transactions; }
+    public List<AlertHistoryEntity> getHistory() { return history; }
 }

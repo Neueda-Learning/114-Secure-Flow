@@ -1,31 +1,15 @@
-# syntax=docker/dockerfile:1
+FROM maven:3.9.11-eclipse-temurin-21 AS build
+WORKDIR /project
+COPY pom.xml .
+COPY src src
+RUN mvn --batch-mode -DskipTests package
 
-FROM eclipse-temurin:21.0.11_10-jdk-alpine-3.23 AS build
-WORKDIR /workspace
-
-# Download dependencies in a cacheable layer before copying the source code.
-COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
-RUN chmod +x mvnw
-RUN --mount=type=cache,target=/root/.m2 \
-    ./mvnw --batch-mode dependency:go-offline
-
-COPY src/ src/
-RUN --mount=type=cache,target=/root/.m2 \
-    ./mvnw --batch-mode -DskipTests package
-
-FROM eclipse-temurin:21.0.11_10-jre-alpine-3.23 AS runtime
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-
-RUN addgroup -S secureflow && adduser -S -G secureflow secureflow
-COPY --from=build --chown=secureflow:secureflow /workspace/target/secureflow-*.jar /app/app.jar
-
+RUN addgroup -S secureflow && adduser -S secureflow -G secureflow
+COPY --from=build /project/target/secureflow-*.jar app.jar
 USER secureflow
 EXPOSE 8080
-
-ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=65.0"
-
-HEALTHCHECK --interval=10s --timeout=3s --start-period=45s --retries=6 \
-    CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/actuator/health || exit 1
-
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+HEALTHCHECK --interval=10s --timeout=3s --start-period=30s --retries=6 \
+    CMD wget -q --spider http://localhost:8080/actuator/health || exit 1
+ENTRYPOINT ["java", "-jar", "app.jar"]

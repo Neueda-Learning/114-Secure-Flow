@@ -1,26 +1,24 @@
-## Linked story
+## What changed?
 
-Closes #
+Describe the behavior in a few clear sentences.
 
-## What changed and why
+## Why?
 
--
+Explain the problem or requirement.
 
-## Acceptance criteria checked
+## Verification
 
-- [ ] Every acceptance criterion is satisfied.
-- [ ] I ran `./mvnw clean verify` or `.\mvnw.cmd clean verify`.
-- [ ] I added/updated meaningful tests.
-- [ ] I updated documentation/diagrams when behavior or architecture changed.
-- [ ] I can explain every changed line without AI assistance.
-- [ ] No password, token, `.env`, or unrelated file is included.
+- [ ] I ran ./mvnw clean verify (or .\mvnw.cmd clean verify on Windows).
+- [ ] All tests passed.
+- [ ] JaCoCo coverage remained at or above 70%.
+- [ ] I checked the affected browser flow when the UI changed.
+- [ ] I validated Docker configuration when Docker files changed.
+- [ ] I updated documentation when behavior or setup changed.
+- [ ] I did not commit secrets, .env, target, or database files.
 
-## Evidence
+## Impact
 
-Test output, API example, or screenshot:
-
-## Human reviewer
-
-Reviewer: @
-
-Questions for the reviewer:
+- API changes:
+- Database migration:
+- Deployment changes:
+- Follow-up work:

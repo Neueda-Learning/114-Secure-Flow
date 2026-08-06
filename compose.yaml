@@ -1,73 +1,35 @@
 name: secureflow
 
 services:
-  db:
-    image: mysql:8.4.11
+  database:
+    image: mysql:8.4
     restart: unless-stopped
-    mem_limit: 768m
-    pids_limit: 256
     environment:
       MYSQL_DATABASE: secureflow
       MYSQL_USER: secureflow
-      MYSQL_PASSWORD: "${SECUREFLOW_DB_PASSWORD:?Run bash deploy-linux.sh to create .env}"
-      MYSQL_ROOT_PASSWORD: "${SECUREFLOW_DB_ROOT_PASSWORD:?Run bash deploy-linux.sh to create .env}"
-      MYSQL_ROOT_HOST: localhost
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secureflow123}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root12345}
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test:
-        - CMD-SHELL
-        - >-
-          mysql --protocol=TCP --host=127.0.0.1 --connect-timeout=3
-          --user="$$MYSQL_USER" --password="$$MYSQL_PASSWORD"
-          --database="$$MYSQL_DATABASE" --execute="SELECT 1"
-          --silent >/dev/null 2>&1
-      interval: 10s
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
       timeout: 5s
-      retries: 12
-      start_period: 30s
-    stop_grace_period: 60s
-    security_opt:
-      - no-new-privileges:true
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+      retries: 20
 
   app:
-    image: secureflow-app:local
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     restart: unless-stopped
-    mem_limit: 768m
-    pids_limit: 256
-    init: true
     depends_on:
-      db:
+      database:
         condition: service_healthy
     environment:
-      DB_URL: "jdbc:mysql://db:3306/secureflow?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      DB_URL: jdbc:mysql://database:3306/secureflow?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       DB_USERNAME: secureflow
-      DB_PASSWORD: "${SECUREFLOW_DB_PASSWORD:?Run bash deploy-linux.sh to create .env}"
-      SERVER_SHUTDOWN: graceful
-      SPRING_LIFECYCLE_TIMEOUT_PER_SHUTDOWN_PHASE: 20s
+      DB_PASSWORD: ${DB_PASSWORD:-secureflow123}
+      DEMO_SEED_ON_STARTUP: "true"
     ports:
-      - "${SECUREFLOW_BIND_ADDRESS:-127.0.0.1}:${SECUREFLOW_PORT:-8080}:8080"
-    read_only: true
-    tmpfs:
-      - /tmp:size=64m
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    stop_grace_period: 30s
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+      - "127.0.0.1:8080:8080"
 
 volumes:
   mysql-data:

@@ -40,10 +40,12 @@ public class TransactionEntity {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    protected TransactionEntity() {}
+    protected TransactionEntity() {
+    }
 
-    public TransactionEntity(String accountId, String payeeId, BigDecimal amount, String currency,
-                             Instant transactionTime, String description, Instant createdAt) {
+    public TransactionEntity(String accountId, String payeeId, BigDecimal amount,
+                             String currency, Instant transactionTime,
+                             String description, Instant createdAt) {
         this.accountId = accountId;
         this.payeeId = payeeId;
         this.amount = amount;
