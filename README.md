@@ -230,6 +230,7 @@ For every pull request and push to main it:
 3. uploads the JAR and JaCoCo report
 4. builds the Docker image
 5. publishes the image only after a successful push to main
+6. automatically deploys the latest image to the configured Linux server
 
 Published image:
 
@@ -237,14 +238,21 @@ Published image:
 ghcr.io/neueda-learning/114-secure-flow:latest
 ~~~
 
-The workflow provides continuous delivery to GitHub Container Registry. It does
-not automatically expose or restart a public server.
+Each successful main build also publishes an immutable
+`sha-<commit>` image. Linux deployment uses the production GitHub Environment,
+SSH host verification, `docker compose pull`, container health checks, and a
+server-side `.env` file. The deployment job remains inactive on pull requests.
+
+Complete the one-time server and GitHub secret setup before merging the
+deployment workflow. See
+[Automatic Linux deployment](docs/continuous-deployment.md).
 
 ## Documentation
 
 - [Architecture](docs/architecture.md)
 - [Testing and coverage](docs/testing.md)
 - [Docker deployment](docs/deployment.md)
+- [Automatic Linux deployment](docs/continuous-deployment.md)
 - [API examples](docs/api-examples.http)
 - [Manual stress/load testing](load-tests/README.md)
 - [Contributing](CONTRIBUTING.md)

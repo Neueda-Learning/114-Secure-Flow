@@ -50,4 +50,91 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name == 'push' }}
-          tags: ghcr.io/neueda-learning/114-secure-flow:latest
+          tags: |
+            ghcr.io/neueda-learning/114-secure-flow:latest
+            ghcr.io/neueda-learning/114-secure-flow:sha-${{ github.sha }}
+
+  deploy-to-linux:
+    name: Deploy latest image to Linux
+    needs: build-test-and-deliver
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    concurrency:
+      group: secureflow-production
+      cancel-in-progress: false
+
+    steps:
+      - name: Get the deployment files
+        uses: actions/checkout@v5
+
+      - name: Configure secure SSH access
+        env:
+          LINUX_HOST: ${{ secrets.LINUX_HOST }}
+          LINUX_USER: ${{ secrets.LINUX_USER }}
+          LINUX_SSH_PORT: ${{ vars.LINUX_SSH_PORT }}
+          SSH_PRIVATE_KEY: ${{ secrets.LINUX_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.LINUX_KNOWN_HOSTS }}
+        run: |
+          port="${LINUX_SSH_PORT:-22}"
+          test -n "$LINUX_HOST"
+          test -n "$LINUX_USER"
+          test -n "$SSH_PRIVATE_KEY"
+          test -n "$SSH_KNOWN_HOSTS"
+          [[ "$LINUX_HOST" =~ ^[A-Za-z0-9.-]+$ ]]
+          [[ "$LINUX_USER" =~ ^[A-Za-z_][A-Za-z0-9_-]*$ ]]
+          [[ "$port" =~ ^[0-9]+$ ]]
+
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          cat > "$HOME/.ssh/config" <<EOF
+          Host secureflow-production
+            HostName $LINUX_HOST
+            User $LINUX_USER
+            Port $port
+            IdentityFile $HOME/.ssh/id_ed25519
+            IdentitiesOnly yes
+            BatchMode yes
+            StrictHostKeyChecking yes
+            ConnectTimeout 15
+          EOF
+          chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts" "$HOME/.ssh/config"
+
+      - name: Copy the production files to Linux
+        env:
+          LINUX_DEPLOY_PATH: ${{ vars.LINUX_DEPLOY_PATH }}
+        run: |
+          test -n "$LINUX_DEPLOY_PATH"
+          [[ "$LINUX_DEPLOY_PATH" =~ ^/[A-Za-z0-9._/-]+$ ]]
+
+          ssh secureflow-production "mkdir -p '$LINUX_DEPLOY_PATH'"
+          scp compose.production.yaml deploy/linux-deploy.sh \
+            "secureflow-production:$LINUX_DEPLOY_PATH/"
+
+      - name: Sign the Linux server in to GHCR
+        env:
+          LINUX_DEPLOY_PATH: ${{ vars.LINUX_DEPLOY_PATH }}
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ssh secureflow-production \
+            "mkdir -p '$LINUX_DEPLOY_PATH/.docker-auth' && chmod 700 '$LINUX_DEPLOY_PATH/.docker-auth'"
+          printf '%s' "$REGISTRY_TOKEN" | ssh secureflow-production \
+            "docker --config '$LINUX_DEPLOY_PATH/.docker-auth' login ghcr.io --username '$REGISTRY_USER' --password-stdin"
+
+      - name: Pull and deploy the latest image
+        env:
+          LINUX_DEPLOY_PATH: ${{ vars.LINUX_DEPLOY_PATH }}
+        run: |
+          ssh secureflow-production \
+            "cd '$LINUX_DEPLOY_PATH' && chmod +x linux-deploy.sh && DOCKER_CONFIG='$LINUX_DEPLOY_PATH/.docker-auth' ./linux-deploy.sh"
+
+      - name: Remove the temporary registry credentials
+        if: always()
+        env:
+          LINUX_DEPLOY_PATH: ${{ vars.LINUX_DEPLOY_PATH }}
+        run: |
+          ssh secureflow-production \
+            "rm -f '$LINUX_DEPLOY_PATH/.docker-auth/config.json' && rmdir '$LINUX_DEPLOY_PATH/.docker-auth'" || true

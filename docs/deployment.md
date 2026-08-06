@@ -1,6 +1,8 @@
 # Docker deployment
 
-The supplied deployment is intentionally local and beginner-friendly.
+The default Compose file is intentionally local and beginner-friendly. For the
+automatic Linux production process, see
+[Automatic Linux deployment](continuous-deployment.md).
 
 ## Requirements
 
@@ -134,6 +136,19 @@ docker pull ghcr.io/neueda-learning/114-secure-flow:latest
 
 The image contains the application only. It still requires a MySQL database and
 the DB_URL, DB_USERNAME, and DB_PASSWORD environment variables.
+
+## Automatic deployment to Linux
+
+The repository also includes:
+
+- `compose.production.yaml`, which pulls the published image instead of building it
+- `deploy/linux-deploy.sh`, which pulls, starts, waits, and checks application health
+- a GitHub Actions deployment job that runs after a successful push to `main`
+
+The Linux server must be prepared once with Docker, an SSH deployment user, and
+a protected `.env` file. Follow
+[Automatic Linux deployment](continuous-deployment.md) before merging the CD
+workflow into `main`.
 
 ## Security
 
