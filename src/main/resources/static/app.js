@@ -72,10 +72,17 @@ function updateClock() {
     document.getElementById("footer-year").textContent = year;
 }
 
+var messageTimer = null;
+
 function showMessage(text, isError) {
     var box = document.getElementById("message");
     box.textContent = text;
     box.className = isError ? "message show error" : "message show";
+
+    clearTimeout(messageTimer);
+    messageTimer = setTimeout(function () {
+        box.className = "message";
+    }, isError ? 6000 : 4000);
 }
 
 function validateAmountRange() {
