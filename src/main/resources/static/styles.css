@@ -471,18 +471,25 @@ main {
 }
 
 .chart-bars {
-    display: grid;
-    gap: 11px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+    height: 220px;
     margin: 0;
-    padding: 0;
+    padding: 0 6px;
     list-style: none;
 }
 
 .chart-row {
-    display: grid;
-    grid-template-columns: minmax(120px, 1fr) minmax(180px, 3.5fr) auto;
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+    height: 100%;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 .chart-label,
@@ -492,41 +499,51 @@ main {
     font-weight: 680;
 }
 
+.chart-label {
+    order: 2;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
 .chart-value {
+    order: 0;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
 
 .chart-track {
+    order: 1;
     position: relative;
-    height: 12px;
+    width: 100%;
+    max-width: 48px;
+    flex: 1 1 auto;
     background: #edf0f2;
     overflow: hidden;
 }
 
 .chart-fill {
     position: absolute;
-    inset: 0 auto 0 0;
-    background: linear-gradient(90deg, #59636a, #8c959c);
+    inset: auto 0 0 0;
+    background: linear-gradient(to top, #59636a, #8c959c);
 }
 
 .chart-fill.high {
-    background: linear-gradient(90deg, #b3000f, #db0011);
+    background: linear-gradient(to top, #b3000f, #db0011);
 }
 
 .chart-fill.medium {
-    background: linear-gradient(90deg, #9e5c00, #c87900);
+    background: linear-gradient(to top, #9e5c00, #c87900);
 }
 
 .chart-fill.open,
 .chart-fill.acknowledged,
 .chart-fill.investigating {
-    background: linear-gradient(90deg, #3e4f5c, #5f7484);
+    background: linear-gradient(to top, #3e4f5c, #5f7484);
 }
 
 .chart-fill.closed,
 .chart-fill.dismissed {
-    background: linear-gradient(90deg, #3e6f53, #5ea17a);
+    background: linear-gradient(to top, #3e6f53, #5ea17a);
 }
 
 .chart-legend {
@@ -1229,17 +1246,17 @@ dialog::backdrop {
         padding-inline: 18px;
     }
 
+    .chart-bars {
+        height: 170px;
+        gap: 8px;
+    }
+
     .chart-row {
-        grid-template-columns: 1fr;
-        gap: 5px;
+        gap: 4px;
     }
 
     .chart-track {
-        height: 10px;
-    }
-
-    .chart-value {
-        justify-self: start;
+        max-width: 34px;
     }
 
     .form-grid,

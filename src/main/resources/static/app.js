@@ -15,8 +15,8 @@ var currentAlertItems = [];
 var alertHistoryItems = [];
 var chartTransactions = [];
 var chartAlerts = [];
-var activeChart = "transactions-hour";
-var chartExpanded = false;
+var activeChart = "alerts-severity";
+var chartExpanded = true;
 var chartOptionIds = [
     "transactions-hour",
     "alerts-rule",
@@ -190,11 +190,11 @@ function barChart(rows, emptyMessage) {
     }));
 
     return '<ol class="chart-bars">' + rows.map(function (row) {
-        var width = Math.max(4, Math.round((row.value / maximum) * 100));
+        var barHeight = Math.max(4, Math.round((row.value / maximum) * 100));
         return '<li class="chart-row">'
             + '<span class="chart-label">' + escapeHtml(row.label) + "</span>"
             + '<span class="chart-track"><span class="chart-fill '
-            + escapeHtml(row.className) + '" style="width:' + width
+            + escapeHtml(row.className) + '" style="height:' + barHeight
             + '%"></span></span>'
             + '<span class="chart-value">' + escapeHtml(row.display) + "</span>"
             + "</li>";
