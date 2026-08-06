@@ -511,12 +511,12 @@ main {
 }
 
 /* categorical palette for charts without a semantic severity/status meaning */
-.chart-row:nth-child(6n+1) .chart-fill { background: linear-gradient(90deg, #a3000d, #db0011); }
-.chart-row:nth-child(6n+2) .chart-fill { background: linear-gradient(90deg, #2b2f33, #454b52); }
-.chart-row:nth-child(6n+3) .chart-fill { background: linear-gradient(90deg, #1f3a5f, #2f567f); }
-.chart-row:nth-child(6n+4) .chart-fill { background: linear-gradient(90deg, #6b7680, #8fa0ab); }
-.chart-row:nth-child(6n+5) .chart-fill { background: linear-gradient(90deg, #8a6d1f, #b08d2e); }
-.chart-row:nth-child(6n+6) .chart-fill { background: linear-gradient(90deg, #2f5d4c, #417a63); }
+.chart-fill.cat-1 { background: linear-gradient(90deg, #a3000d, #db0011); }
+.chart-fill.cat-2 { background: linear-gradient(90deg, #2b2f33, #454b52); }
+.chart-fill.cat-3 { background: linear-gradient(90deg, #1f3a5f, #2f567f); }
+.chart-fill.cat-4 { background: linear-gradient(90deg, #6b7680, #8fa0ab); }
+.chart-fill.cat-5 { background: linear-gradient(90deg, #8a6d1f, #b08d2e); }
+.chart-fill.cat-6 { background: linear-gradient(90deg, #2f5d4c, #417a63); }
 
 .chart-row .chart-fill.high {
     background: linear-gradient(90deg, #b3000f, #db0011);
@@ -581,6 +581,13 @@ main {
 .legend-dot.dismissed {
     background: #5ea17a;
 }
+
+.legend-dot.cat-1 { background: #db0011; }
+.legend-dot.cat-2 { background: #454b52; }
+.legend-dot.cat-3 { background: #2f567f; }
+.legend-dot.cat-4 { background: #8fa0ab; }
+.legend-dot.cat-5 { background: #b08d2e; }
+.legend-dot.cat-6 { background: #417a63; }
 
 .panel-tag {
     padding: 6px 9px;

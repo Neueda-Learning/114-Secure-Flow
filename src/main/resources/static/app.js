@@ -161,6 +161,11 @@ function chartClass(label) {
     return String(label).toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
 
+var semanticChartClasses = [
+    "high", "medium",
+    "open", "acknowledged", "investigating", "closed", "dismissed"
+];
+
 function chartRows(counts, unit) {
     var rows = [];
 
@@ -177,6 +182,13 @@ function chartRows(counts, unit) {
     rows.sort(function (left, right) {
         return right.value - left.value;
     });
+
+    rows.forEach(function (row, index) {
+        row.colorClass = semanticChartClasses.indexOf(row.className) >= 0
+            ? row.className
+            : "cat-" + ((index % 6) + 1);
+    });
+
     return rows;
 }
 
@@ -194,7 +206,7 @@ function barChart(rows, emptyMessage) {
         return '<li class="chart-row">'
             + '<span class="chart-label">' + escapeHtml(row.label) + "</span>"
             + '<span class="chart-track"><span class="chart-fill '
-            + escapeHtml(row.className) + '" style="width:' + barWidth
+            + escapeHtml(row.colorClass) + '" style="width:' + barWidth
             + '%"></span></span>'
             + '<span class="chart-value">' + escapeHtml(row.display) + "</span>"
             + "</li>";
@@ -287,7 +299,7 @@ function chartModel(chartId) {
 function chartLegend(rows) {
     return rows.slice(0, 5).map(function (row) {
         return '<span class="legend-chip"><i class="legend-dot '
-            + escapeHtml(row.className) + '"></i>'
+            + escapeHtml(row.colorClass) + '"></i>'
             + escapeHtml(row.label) + "</span>";
     }).join("");
 }
