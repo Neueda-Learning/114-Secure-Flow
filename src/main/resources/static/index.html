@@ -86,6 +86,56 @@
             </article>
         </section>
 
+        <section class="panel chart-panel" aria-labelledby="charts-title">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">VISUAL INSIGHTS</p>
+                    <h2 id="charts-title">Chart explorer</h2>
+                </div>
+            </div>
+
+            <div class="chart-options" role="tablist" aria-label="Chart options">
+                <button class="chart-option" type="button"
+                        data-chart-option="transactions-hour" role="tab"
+                        aria-selected="false" aria-controls="chart-stage">
+                    Transactions by hour
+                </button>
+                <button class="chart-option" type="button"
+                        data-chart-option="alerts-rule" role="tab"
+                        aria-selected="false" aria-controls="chart-stage">
+                    Alerts by rule
+                </button>
+                <button class="chart-option" type="button"
+                        data-chart-option="alerts-status" role="tab"
+                        aria-selected="false" aria-controls="chart-stage">
+                    Alert status mix
+                </button>
+                <button class="chart-option" type="button"
+                        data-chart-option="alerts-severity" role="tab"
+                        aria-selected="false" aria-controls="chart-stage">
+                    Alert severity mix
+                </button>
+                <button class="chart-option" type="button"
+                        data-chart-option="amount-buckets" role="tab"
+                        aria-selected="false" aria-controls="chart-stage">
+                    Amount buckets
+                </button>
+            </div>
+
+            <div class="chart-stage" id="chart-stage" aria-live="polite">
+                <div class="chart-stage-header">
+                    <h3 id="chart-stage-title">Choose a chart</h3>
+                    <p id="chart-stage-subtitle">
+                        Select an option above to expand the chart.
+                    </p>
+                </div>
+                <div class="chart-plot" id="chart-plot">
+                    <p class="empty">No chart selected yet.</p>
+                </div>
+                <div class="chart-legend" id="chart-legend"></div>
+            </div>
+        </section>
+
         <div class="dashboard-grid">
             <section id="transaction-entry" class="panel transaction-panel">
                 <div class="panel-heading">

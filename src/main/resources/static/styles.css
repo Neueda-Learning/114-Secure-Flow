@@ -406,6 +406,174 @@ main {
     font-size: 0.78rem;
 }
 
+.chart-panel {
+    margin-bottom: 26px;
+}
+
+.chart-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 15px 24px;
+    border-bottom: 1px solid var(--line);
+    background: #f8f9f9;
+}
+
+.chart-option {
+    padding: 8px 12px;
+    border: 1px solid #c9ced1;
+    color: #474d52;
+    background: white;
+    font-size: 0.72rem;
+    font-weight: 680;
+}
+
+.chart-option:hover,
+.chart-option:focus-visible {
+    border-color: #777;
+    outline: 2px solid #ddd;
+}
+
+.chart-option.active {
+    border-color: var(--charcoal);
+    color: white;
+    background: var(--charcoal);
+}
+
+.chart-stage {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.24s ease, opacity 0.24s ease;
+}
+
+.chart-stage.expanded {
+    max-height: 780px;
+    opacity: 1;
+}
+
+.chart-stage-header {
+    padding: 18px 24px 2px;
+}
+
+.chart-stage-header h3 {
+    margin-bottom: 4px;
+}
+
+.chart-stage-header p {
+    margin-bottom: 0;
+    color: var(--muted);
+    font-size: 0.73rem;
+}
+
+.chart-plot {
+    padding: 16px 24px 10px;
+}
+
+.chart-bars {
+    display: grid;
+    gap: 11px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.chart-row {
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) minmax(180px, 3.5fr) auto;
+    align-items: center;
+    gap: 12px;
+}
+
+.chart-label,
+.chart-value {
+    color: #4a5056;
+    font-size: 0.71rem;
+    font-weight: 680;
+}
+
+.chart-value {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.chart-track {
+    position: relative;
+    height: 12px;
+    background: #edf0f2;
+    overflow: hidden;
+}
+
+.chart-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: linear-gradient(90deg, #59636a, #8c959c);
+}
+
+.chart-fill.high {
+    background: linear-gradient(90deg, #b3000f, #db0011);
+}
+
+.chart-fill.medium {
+    background: linear-gradient(90deg, #9e5c00, #c87900);
+}
+
+.chart-fill.open,
+.chart-fill.acknowledged,
+.chart-fill.investigating {
+    background: linear-gradient(90deg, #3e4f5c, #5f7484);
+}
+
+.chart-fill.closed,
+.chart-fill.dismissed {
+    background: linear-gradient(90deg, #3e6f53, #5ea17a);
+}
+
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 24px 20px;
+}
+
+.legend-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    border: 1px solid #d5dadd;
+    color: #4b545a;
+    background: #f8f9fa;
+    font-size: 0.67rem;
+    font-weight: 680;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #6c767d;
+}
+
+.legend-dot.high {
+    background: var(--red);
+}
+
+.legend-dot.medium {
+    background: var(--warning);
+}
+
+.legend-dot.open,
+.legend-dot.acknowledged,
+.legend-dot.investigating {
+    background: #5f7484;
+}
+
+.legend-dot.closed,
+.legend-dot.dismissed {
+    background: #5ea17a;
+}
+
 .panel-tag {
     padding: 6px 9px;
     color: #5e666b;
@@ -1052,6 +1220,26 @@ dialog::backdrop {
 
     .summary-card {
         min-height: 105px;
+    }
+
+    .chart-options,
+    .chart-stage-header,
+    .chart-plot,
+    .chart-legend {
+        padding-inline: 18px;
+    }
+
+    .chart-row {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+
+    .chart-track {
+        height: 10px;
+    }
+
+    .chart-value {
+        justify-self: start;
     }
 
     .form-grid,
