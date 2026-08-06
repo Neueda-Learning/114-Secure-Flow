@@ -60,10 +60,9 @@ descriptions apply to the reviewed `main` baseline.
 
 ## Delivery and operations
 
-- The latest reviewed pipeline passed tests, Flyway, JaCoCo, JAR upload, and
-  Docker construction. GHCR permission alignment is the single remaining
-  registry-delivery action for that run.
-- The review branch adds reproducible health/API/MySQL/non-root/restart checks
+- Main run 31098653366 passed tests, Flyway, JaCoCo, JAR upload, MySQL/Compose/
+  browser verification, Docker construction, and GHCR publication.
+- The merged review work adds reproducible health/API/MySQL/non-root/restart checks
   to the existing local Compose deployment; draft PR #46
   separately explores Linux server automation for supervised verification.
 - The local single-instance design is easy to operate and explain. Resource
@@ -76,17 +75,18 @@ descriptions apply to the reviewed `main` baseline.
 
 - The repository shows multi-contributor issues, branches, PRs, and CI history,
   and `main` already enforces pull requests, one approval, and
-  `test-and-package`. After the first revised workflow run, requiring the new
-  MySQL/browser check, stale-approval dismissal, and conversation resolution
-  would extend this verified control.
+  `test-and-package`. The revised workflow has now passed on `main`; requiring
+  the MySQL/browser check, stale-approval dismissal, and conversation
+  resolution would extend this verified control.
 - The documented branch/PR workflow now provides consistent expectations. A
   release-tag/versioning policy and review of long-lived branches are logical
   maintenance steps.
 - Selecting a repository license will make redistribution terms explicit.
 - Historical issues/PRs are preserved authentically, while the repository
   history document supplies current navigation and context.
-- AI assistance is transparently disclosed; recorded independent human review
-  can provide the final verification layer before merge.
+- AI assistance is transparently disclosed. PR #48 used an administrator
+  bypass while its independent review was pending; future protected merges
+  should retain the required human approval as evidence.
 
 ## Related work
 

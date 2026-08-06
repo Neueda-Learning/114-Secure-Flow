@@ -7,19 +7,19 @@ honest route through SecureFlow's strongest repository evidence. It complements
 the detailed [traceability matrix](traceability-matrix.md) and does not assign a
 rating on the evaluator's behalf.
 
-Baseline: reviewed `main` commit `9379af1`, with final branch validation recorded
-on 2026-08-06. Proposed-branch evidence is clearly separated from published
-`main` evidence.
+Baseline: reviewed `main` commit `13738e3`, with local and GitHub workflow
+validation recorded on 2026-08-06. Proposed-branch evidence is clearly
+separated from published `main` evidence.
 
 ## Evidence-led summary
 
 | Rubric area | Strongest repository evidence | What it demonstrates |
 |---|---|---|
-| Technical proficiency and dual-skilling | [Technology inventory](technology-inventory.md), [architecture](architecture.md), Java/JavaScript/SQL/YAML/Shell source | Breadth across backend, browser UI, database, tests, containers, and CI plus detailed understanding of their interaction |
+| Technical proficiency and dual-skilling | [Supplementary technology guide](supplementary-technology-guide.md), [technology inventory](technology-inventory.md), [architecture](architecture.md), Java/JavaScript/SQL/YAML/Shell source | Breadth across backend, browser UI, database, tests, containers, and CI plus beginner-to-code explanations of how the technologies interact |
 | Solution design and implementation | [Requirements](requirements.md), [API](api.md), [ADRs](decisions/README.md), [traceability](traceability-matrix.md) | End-to-end flow, explicit design choices, acceptance evidence, and maintainable component boundaries |
 | Automation and modernization | Maven Wrapper, Flyway, JaCoCo, Docker/Compose, GitHub Actions, demo seeding, k6 | Repeatable build, migration, testing, coverage, packaging, demonstration, and controlled load generation |
 | Compliance, security, and risk awareness | [Threat model](security-and-threat-model.md), [India considerations](privacy-compliance-india.md), [risk register](risk-register.md), [security policy](../SECURITY.md) | Implemented safeguards, proactive issue identification, prioritized solutions, responsible legal qualification, and maintenance ownership |
-| Collaboration and delivery discipline | [Repository history](repository-history.md), issues, PRs, templates, [workflow](repository-workflow.md) | Multi-contributor delivery, scoped branches/PRs, CI feedback, authentic authorship, and an improved future review process |
+| Collaboration and delivery discipline | [Agile/Kanban evidence](agile-delivery-evidence.md), [repository history](repository-history.md), issues, PRs, templates, [workflow](repository-workflow.md) | Visible planning, 18 scoped issue items, ownership, incremental burn-up, review/CI feedback, and authentic authorship |
 | Evidence quality and integrity | [Evidence index](evidence-index.md), [review report](review-report.md), [AI record](ai-usage.md) | Reproducible claims, persistent links, transparent boundaries, AI disclosure, and preserved history |
 
 ## Recommended 10-minute repository walkthrough
@@ -33,10 +33,11 @@ Open the [README](../README.md) and explain:
   capabilities
 - the seven-test Maven quality gate, 70% JaCoCo threshold, and 97.09% local report
 - the MySQL/Compose runtime, persistence, Chromium, and axe checks
-- the successful JAR and Docker construction stages
-- the clearly isolated GHCR permission follow-up
+- the successful JAR, Docker construction, and GHCR publication stages
+- the precise boundary between verified engineering controls and future
+  security, privacy, legal, accessibility, and operational assurance
 
-Use [`EVD-CI-001`](evidence-index.md#evd-ci-001-main-quality-gate-and-registry-follow-up)
+Use [`EVD-CI-004`](evidence-index.md#evd-ci-004-audit-review-pr-and-successful-main-delivery)
 instead of relying on memory.
 
 ### 2. Trace one feature end to end
@@ -126,9 +127,14 @@ not merely awareness of terminology.
 
 ### 6. Show collaboration without changing history
 
-Use [repository history](repository-history.md) to identify actual issues, PRs,
-authors, outcomes, CI states, and open work. Each contributor should select a PR
-they actually authored and explain:
+Start with [Agile delivery and Kanban evidence](agile-delivery-evidence.md) to
+show the six flow states, 17 Done/one Backlog distribution, WIP indicators,
+seven enabled workflows, burn-up, and visible team ownership. Then use
+[repository history](repository-history.md) to follow representative cards into
+actual issues, PRs, authors, outcomes, and CI states.
+
+Each contributor should select a board item and PR they actually owned and
+explain:
 
 1. the problem and acceptance criteria
 2. their implementation decision
@@ -138,6 +144,11 @@ they actually authored and explain:
 
 This supplies the human evidence needed for individual ownership, growth
 mindset, learning, feedback, and dual-skilling criteria.
+
+The board is private; arrange authorized organization access for a live
+inspection. If that is unavailable during review, use the public issue/PR links
+and the dated `EVD-AGILE-001` evidence boundary rather than claiming public
+board access.
 
 ## Rubric-specific reviewer notes
 
@@ -152,6 +163,13 @@ presenting them as an isolated list.
 For individual scoring, each contributor should explain one primary contribution
 and one unfamiliar technology they learned. The repository cannot replace that
 personal explanation.
+
+The [supplementary technology guide](supplementary-technology-guide.md) provides
+ready source-backed explanations for Flyway, MockMvc, JaCoCo, k6, Maven/JAR,
+H2/JPA/Hibernate, validation, Actuator/OpenAPI, Docker/Compose, Actions/GHCR,
+and Playwright/axe. Flyway, MockMvc, JaCoCo, and k6 are owner-confirmed as
+outside the class material; coverage of the remaining tools requires instructor
+confirmation.
 
 ### Solution design and implementation
 
@@ -191,11 +209,11 @@ every concern with an existing safeguard and solution path.
 
 Use:
 
-- “Seven integration tests passed for commit `9379af1` and in the documented
+- “Seven integration tests passed for commit `13738e3` and in the documented
   local regression run.”
 - “The configured JaCoCo 70% line-coverage gate passed.”
-- “The application quality and Docker construction stages passed; GHCR
-  permissions are the isolated delivery follow-up.”
+- “The Maven, MySQL/Compose/browser, Docker construction, and GHCR publication
+  stages passed in main run 31098653366.”
 - “The default Compose configuration is designed for controlled local use.”
 - “The repository documents a security and compliance maturity roadmap.”
 
@@ -206,8 +224,12 @@ strengthens credibility and protects the verified achievements.
 ## Presentation-readiness checklist
 
 - [ ] Confirm each contributor's chosen issue/PR and personal explanation.
+- [ ] Open the Kanban board with authorized access and show status, ownership,
+      burn-up, and one issue-to-PR trace.
 - [ ] Rehearse the browser-to-database transaction trace.
 - [ ] Rehearse simple explanations of Flyway, JaCoCo, JAR, Docker, CI/CD, and k6.
+- [ ] Choose two supplementary technologies and trace each from configuration
+      to execution, pass/fail result, and project evidence.
 - [ ] Decide whether to run `clean verify` live or show the persistent CI link.
 - [ ] Confirm demo data is synthetic and startup/manual seeding behavior is understood.
 - [ ] Show one valid and one rejected alert transition.
@@ -222,6 +244,8 @@ strengthens credibility and protects the verified achievements.
 - [Documentation index](README.md)
 - [Traceability matrix](traceability-matrix.md)
 - [Evidence index](evidence-index.md)
+- [Agile delivery and Kanban evidence](agile-delivery-evidence.md)
+- [Supplementary technology learning guide](supplementary-technology-guide.md)
 - [Repository review report](review-report.md)
 - [AI-assistance record](ai-usage.md)
 

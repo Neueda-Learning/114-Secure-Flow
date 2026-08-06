@@ -10,24 +10,32 @@ a plain HTML/CSS/JavaScript interface and MySQL persistence.
 ## Current status
 
 The documented baseline is `main` at commit
-[`9379af1`](https://github.com/Neueda-Learning/114-Secure-Flow/commit/9379af19e7194a4a5b8e0a22eb4f34e141b1a503),
+[`13738e3`](https://github.com/Neueda-Learning/114-Secure-Flow/commit/13738e3c42c618ee01d35babf521b51a70a0b1b6),
 reviewed on 2026-08-06.
 
 - Seven Spring Boot HTTP integration tests are present and passed in the
   referenced `main` CI run.
 - The 70% JaCoCo line-coverage gate passed in that run.
 - The runnable JAR and Docker image build completed.
-- The review branch also passed a disposable MySQL 8.4 Compose smoke test,
-  named-volume restart check, non-root runtime check, and two Chromium tests.
+- The retained `main` workflow passed a disposable MySQL 8.4 Compose smoke
+  test, named-volume restart check, non-root runtime check, and two Chromium
+  tests.
 - The automated axe scan found no automatically detectable WCAG A/AA
   violations in the verified page state. This is useful evidence, not a claim
   of complete accessibility conformance.
-- Every application quality and packaging stage completed successfully. The
-  remaining registry-delivery step returned `denied`. Package/repository access
-  is configured; an organization Actions administrator must now allow package
-  write for workflow tokens before publication can be verified.
+- Every application quality, system, packaging, and registry-delivery stage
+  completed successfully in
+  [main run 31098653366](https://github.com/Neueda-Learning/114-Secure-Flow/actions/runs/31098653366),
+  including publication of `ghcr.io/neueda-learning/114-secure-flow:latest`.
 - GitHub settings verify that `main` requires pull requests, one approval, and
-  the existing `test-and-package` check.
+  the existing `test-and-package` check. PR #48 used an authorized
+  administrator bypass while its independent review was pending; future merges
+  should retain the required approval as evidence.
+- The team's private GitHub Projects Kanban board records 18 issue items, an
+  explicit Backlog-to-Done flow, visible ownership, WIP indicators, seven
+  enabled automations, and burn-up/status insights. Authorized evaluators can
+  follow the board-to-issue-to-PR evidence chain in the
+  [Agile delivery record](docs/agile-delivery-evidence.md).
 - The current branch is intentionally optimized for local learning. Identity,
   TLS, managed secrets, backup, security-scanning, and shared-deployment
   controls are documented as the next maturity stage.
@@ -35,6 +43,22 @@ reviewed on 2026-08-06.
 See the [evidence index](docs/evidence-index.md) and
 [improvement roadmap](docs/known-limitations.md) for the verified boundary and
 next evidence steps.
+
+## India privacy, security, and compliance evidence
+
+The repository includes a dated, evidence-linked
+[India privacy, security, and compliance assessment](docs/privacy-compliance-india.md).
+It covers the DPDP Act 2023, the 2025 Rules and phased commencement, the IT Act
+and SPDI context, CERT-In considerations, accessibility, and potential RBI/PMLA
+sector relevance. It maps each topic to implemented source/configuration/test
+evidence, identifies the responsible next control, and links authoritative
+Indian sources.
+
+The assessment deliberately does not claim legal compliance or regulated-use
+approval. SecureFlow remains a synthetic educational demonstration until
+identity, authorization, TLS, managed secrets, retention/deletion, incident and
+recovery controls, security scanning, and qualified privacy/security/sector
+review are completed.
 
 ## Implemented capabilities
 
@@ -212,6 +236,8 @@ Start with the [documentation index](docs/README.md). Key audit documents are:
 
 - [Project overview](docs/project-overview.md)
 - [Requirements](docs/requirements.md)
+- [Supplementary technology learning guide](docs/supplementary-technology-guide.md)
+- [Agile delivery and Kanban evidence](docs/agile-delivery-evidence.md)
 - [Evidence index](docs/evidence-index.md)
 - [Traceability matrix](docs/traceability-matrix.md)
 - [Mentor rubric evidence guide](docs/mentor-review-guide.md)

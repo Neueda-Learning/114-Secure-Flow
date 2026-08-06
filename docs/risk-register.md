@@ -37,7 +37,8 @@ formal enterprise scores; named ownership requires project-owner confirmation.
 ## Recommended implementation sequence
 
 1. Maintain the controlled local/synthetic boundary.
-2. Align GHCR publication and verify artifact identity.
+2. Extend successful GHCR publication with immutable artifact identity,
+   signing and provenance.
 3. Confirm repository protection/review controls and the project license.
 4. Add identity, TLS, and managed secrets within an approved deployment design.
 5. Add scanning, targeted database edge cases, and backup/restore evidence.

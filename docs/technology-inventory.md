@@ -1,5 +1,9 @@
 # Technology and dependency inventory
 
+Learners who need code-level explanations of when these tools run and how they
+pass or fail should use the
+[supplementary technology learning guide](supplementary-technology-guide.md).
+
 ## Purpose, scope, and evidence
 
 This inventory explains direct technologies used by the reviewed `main`
@@ -45,9 +49,10 @@ remains the final step before distribution or production conclusions.
 |---|---|---|---|
 | Docker | Multi-stage `Dockerfile` | Build JAR and run it as a non-root application user | Multi-stage/non-root packaging is implemented; digests, scanning, SBOM, and signing are the next supply-chain controls. [Dockerfile reference](https://docs.docker.com/reference/dockerfile/) |
 | Docker Compose | `compose.yaml` | Start application plus MySQL and retain a named volume | Loopback binding, health checks, ordering, and persistence suit local use; managed credentials, backup, TLS, resources, and log rotation extend it for shared use. [Docker Compose](https://docs.docker.com/compose/) |
-| GitHub Actions | `.github/workflows/pipeline.yml` | Maven quality, MySQL/Compose/browser system checks, artifacts, and GHCR publication | Local equivalents pass; pinning action SHAs and aligning GHCR permissions strengthen the delivery layer. [GitHub Actions reference](https://docs.github.com/en/actions/reference) |
-| GitHub Container Registry | `ghcr.io/neueda-learning/114-secure-flow:latest` | Intended image delivery | The destination is configured; permissions alignment plus immutable SHA tags/digests complete release provenance. [Container registry docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) |
+| GitHub Actions | `.github/workflows/pipeline.yml` | Maven quality, MySQL/Compose/browser system checks, artifacts, and GHCR publication | Main run 31098653366 passed all jobs; pinning action SHAs and adding security/provenance gates strengthen the delivery layer. [GitHub Actions reference](https://docs.github.com/en/actions/reference) |
+| GitHub Container Registry | `ghcr.io/neueda-learning/114-secure-flow:latest` | Published application image | Publication succeeded for `main` commit `13738e3`; immutable SHA/digest tags, signing and pull/deployment verification complete release provenance. [Container registry docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) |
 | Git/GitHub | Repository history, issues, PRs | Collaboration and evidence | `main` protection verifies required PRs, one approval, and `test-and-package`; actual approvals remain PR-specific evidence. Repository visibility reinforces the no-sensitive-data rule. |
+| GitHub Projects | Private organization Project #18 | Kanban planning, ownership, status flow, priority, burn-up/status insights, and issue/PR traceability | The authenticated 2026-08-06 snapshot is recorded as `EVD-AGILE-001`; access and retention depend on organization settings and GitHub terms. Public issue/PR links preserve a portable evidence layer, and board status is not a substitute for PR/test evidence. [GitHub Projects documentation](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects) |
 
 ## External services and integrations
 

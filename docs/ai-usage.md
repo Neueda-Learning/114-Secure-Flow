@@ -15,7 +15,7 @@ the repository's contribution record.
 | Purpose | Documentation drafting/refinement, requirement analysis, code explanation, review support, debugging assistance, test-case suggestions, formatting, and implementation support requested by the project owner |
 | Work areas supported | README/guides, Docker and CI/CD explanation/changes, UI and backend review/changes, tests/load-test explanation, issue/PR drafting and review, repository evidence review |
 | Assistance type | Suggestions, draft text/code, repository inspection, command execution, and verification support under user direction |
-| Human review | The project owner directed the work and explicitly approved an integrity-preserving, solution-focused revision. Independent line review before merge is the next verification step. |
+| Human review | The project owner directed the work and explicitly approved an integrity-preserving revision. PR #48 was merged through an authorized administrator bypass while the requested independent review remained pending; that bypass is not counted as human review. This follow-up documentation remains subject to normal repository review. |
 | Verification | Source inspection, Maven/CI tests, syntax/configuration checks, Docker/health checks where recorded, and browser checks where recorded. Each evidence item states its verified boundary and next step. |
 | Final responsibility | Project owners, contributors, and reviewers remain responsible for requirements, correctness, security, privacy, licensing, deployment, and all published claims. |
 
@@ -26,8 +26,18 @@ Codex assisted the 2026-08-06 documentation and evidence review by:
 - inspecting the clean `main` baseline and existing documents
 - reviewing readable criteria from mentor-supplied rubric photographs
 - inspecting accessible GitHub issues, pull requests, branches, reviews, and CI
+- performing an authenticated, read-only inspection of the private GitHub
+  Project board, its views, fields, workflows, cards, and insight charts for the
+  dated Agile evidence record
 - cross-checking source, tests, configuration, and official documentation
+- mapping owner-identified supplementary technologies and other project-specific
+  tooling to exact code/configuration, execution timing, pass/fail rules, and
+  primary documentation without inferring unverified syllabus coverage
 - drafting documentation changes and link/claim validation procedures
+- updating the India privacy/security assessment from current official sources
+  and mapping those topics to repository evidence without making a legal claim
+- reconciling documentation with the successful post-merge GitHub Actions and
+  GHCR publication evidence
 
 Rubric photographs were used only to interpret evaluation themes. They are not
 committed because they include organization-specific context and are not needed

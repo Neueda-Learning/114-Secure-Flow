@@ -2,7 +2,7 @@
 
 ## 1. Executive summary
 
-A documentation-first review was performed against `main` commit `9379af1` and
+A documentation-first review was performed against `main` commit `13738e3` and
 readable mentor-rubric photographs. The review found a small, understandable
 Spring Boot application with a coherent transaction/monitoring/alert flow,
 seven passing HTTP integration tests in persistent CI evidence, versioned
@@ -17,9 +17,9 @@ accessibility, and persistence gates where the initial evidence review found
 the largest repository-verifiable opportunities.
 
 The latest reviewed `main` workflow demonstrates a strong quality pipeline:
-tests, Flyway, JaCoCo, JAR upload, and Docker construction all passed. GHCR
-publication is the remaining delivery action because the registry returned
-`denied`; the evidence and recommended permissions check are clearly linked.
+tests, Flyway, JaCoCo, JAR upload, MySQL/Compose/browser checks, Docker
+construction, and GHCR publication all passed. The persistent evidence is
+[run 31098653366](https://github.com/Neueda-Learning/114-Secure-Flow/actions/runs/31098653366).
 
 Functional scope is deliberately narrow: CI job separation, reproducible
 Compose verification scripts, Playwright/axe test tooling, configurable local
@@ -35,8 +35,10 @@ were not changed.
 - [API reference](api.md)
 - [Development/configuration guide](development.md)
 - [Technology inventory](technology-inventory.md)
+- [Supplementary technology learning guide](supplementary-technology-guide.md)
 - [Repository workflow](repository-workflow.md)
 - [Repository history](repository-history.md)
+- [Agile delivery and Kanban evidence](agile-delivery-evidence.md)
 - [Evidence index](evidence-index.md)
 - [Requirements/rubric traceability](traceability-matrix.md)
 - [Mentor rubric evidence guide](mentor-review-guide.md)
@@ -58,7 +60,8 @@ were not changed.
 - [Testing](testing.md): exact seven tests, pass/fail logic, all relevant test
   categories, CI result, evidence, and expansion opportunities.
 - [Deployment](deployment.md): current local Compose flow, WSL guidance,
-  persistence, orphan diagnosis, GHCR follow-up, and production-readiness plan.
+  persistence, orphan diagnosis, successful GHCR delivery, and the
+  production-readiness plan.
 - [Manual k6 guide](../load-tests/README.md): current port override, thresholds,
   correctness-check nuance, evidence method, and safety.
 - [Contributing guide](../CONTRIBUTING.md): truthful evidence, branches, review,
@@ -79,13 +82,19 @@ and evidence boundaries without changing the original record.
 Open issue #42 and PRs #46/#47 were inspected and linked. Future metadata/body
 updates can build on this foundation with clearly dated, evidence-based notes.
 
+The private GitHub Project was inspected read-only to record its verified
+configuration, current counts, ownership, workflows, and insight series. No
+project item, field, workflow, status, issue, or pull request was changed to
+create this evidence.
+
 ## 5. Evidence added
 
 The [evidence index](evidence-index.md) records source baseline, test source,
 three relevant historical CI runs, Flyway schema, container configuration,
-manual k6 contribution, GitHub collaboration history, locally resolved
-dependency inventory, rubric photographs, final validation, and new MySQL/
-Compose/browser/accessibility evidence.
+manual k6 contribution, GitHub collaboration history, authenticated private
+Kanban configuration/flow/burn-up evidence, locally resolved dependency
+inventory, a source-backed supplementary technology learning map, rubric
+photographs, final validation, and MySQL/Compose/browser/accessibility evidence.
 
 Each item records verification method, date where natural, current validity,
 and evidence boundaries. Recommended additions for benchmark, deployment,
@@ -95,6 +104,9 @@ prioritized.
 ## 6. Links and traceability added
 
 - Requirements -> source -> tests -> issues/PRs -> evidence
+- Kanban cards -> assigned issues -> pull requests -> CI -> implementation/tests
+- Supplementary technologies -> dependency/configuration -> real code ->
+  execution timing -> pass/fail evidence -> official documentation
 - CI claims -> immutable run and commit URLs
 - Architecture decisions -> implementation/evidence/risks
 - Security threats -> implemented controls -> recommended enhancements
@@ -125,8 +137,10 @@ plan.
 The India document addresses DPDP 2023 and phased 2025 Rules commencement,
 notice/consent, minimization, retention/deletion, rights, children, safeguards,
 breach/cross-border/vendor issues, IT Act/SPDI transition, CERT-In,
-sector-specific RBI/PMLA relevance, accessibility, and licensing. It repeatedly
-requires qualified legal review and makes no compliance claim.
+sector-specific RBI/PMLA relevance, accessibility, and licensing. It includes a
+dated official-source register, field/flow inventory, implemented-control links,
+gap ownership, an approval checklist, and rubric mapping. It repeatedly requires
+qualified legal review and makes no compliance claim.
 
 ## 9. AI-assistance documentation completed
 
@@ -143,10 +157,10 @@ loopback binding, a non-root application container, migration management,
 automated tests, coverage enforcement, and reproducible packaging. The next
 maturity stage adds identity and TLS, managed secrets, retention and recovery,
 security/dependency/container/secret scans, wider browser/manual accessibility
-assurance, GHCR organization-policy alignment, commit-specific deployment
-evidence, and a repository license. Required PRs, one approval, and the existing
-quality check are now verified settings evidence. MySQL parity and
-baseline browser/axe automation are now implemented in the proposed pipeline.
+assurance, immutable container provenance, commit-specific deployment evidence,
+and a repository license. Required PRs, one approval, and the existing quality
+check are verified settings evidence. MySQL parity, baseline browser/axe
+automation, and GHCR publication are implemented and verified in the main run.
 
 See [current boundaries and improvement roadmap](known-limitations.md) and
 [risk register](risk-register.md).
@@ -157,37 +171,44 @@ The following evidence additions would make an already strong repository record
 even more complete:
 
 - full authoritative mentor-rubric wording and individual rating
-- independent human approvals for open PRs
+- independent human approvals for future protected merges; PR #48 used an
+  administrator bypass while its review was pending
+- authorized evaluator access to the private Kanban board and optional dated
+  demo/retrospective notes or cycle-time measures
 - raw/reproducible PR #44 k6 results
 - PR #47 manual EC2/visual verification beyond its description
 - current production server, deployment, rollback, backup, or restore
 - formal security/privacy/legal/accessibility/licensing compliance
-- an independently reviewed GitHub run of the new system jobs after publication
+- specialist security/privacy/legal/accessibility review and resulting actions
 - complete historical AI use/model/prompt record
 
 ## 12. Recommended next actions
 
 1. Human-review this documentation and confirm reconstructed requirements/rubric.
-2. Human-review and publish the validated documentation through a focused PR.
-3. Resolve GHCR permissions and verify a commit-specific image digest.
-4. Retain the required independent approval and add the new MySQL/browser check
-   to branch protection after its first GitHub run.
-5. Choose a project license and run dependency/container license review.
-6. Keep deployment local/synthetic until identity/TLS/secrets/privacy controls
+2. Retain the required independent approval on future protected merges.
+3. Keep the Kanban issue/PR links current and arrange authorized board access
+   for mentor review.
+4. Add immutable image SHA/digest tags, signing/provenance and pull verification.
+5. Consider adding the passed MySQL/browser job to branch protection.
+6. Choose a project license and run dependency/container license review.
+7. Keep deployment local/synthetic until identity/TLS/secrets/privacy controls
    are designed and verified.
-7. Add security scanning, wider browser/manual accessibility, and backup/restore tests.
-8. Re-run k6 in a controlled environment with raw retained evidence.
-9. Review draft PR #46 only after actual Linux/network prerequisites are known.
+8. Add security scanning, wider browser/manual accessibility, and backup/restore tests.
+9. Re-run k6 in a controlled environment with raw retained evidence.
+10. Review draft PR #46 only after actual Linux/network prerequisites are known.
 
 ## 13. Rubric coverage summary
 
 Repository evidence strongly supports artifact-level technical breadth,
-end-to-end implementation, and use of automation. Requirements/evidence
-traceability and risk awareness are now documented. The repository also offers
-a clear improvement path for Git governance, static/security analysis, and
-measurable business impact. Mentor/team observation can complement the artifacts
-with behavioral evidence for mindset, adaptability, individual ownership, and
-policy conduct.
+end-to-end implementation, use of automation, and visible incremental delivery.
+The private Kanban board adds direct planning, ownership, WIP, workflow, and
+burn-up evidence across 18 issue items. Requirements/evidence traceability and
+risk awareness are documented. The supplementary technology guide adds a
+beginner-to-code path for explaining unfamiliar tools and demonstrating
+cross-stack understanding. The repository also offers a clear improvement
+path for independent review, static/security analysis, and measurable business
+impact. Mentor/team observation can complement the artifacts with behavioral
+evidence for mindset, adaptability, individual ownership, and policy conduct.
 
 See the [rubric matrix](traceability-matrix.md#mentor-rubric-traceability) and
 [mentor evidence guide](mentor-review-guide.md).
@@ -197,8 +218,9 @@ See the [rubric matrix](traceability-matrix.md#mentor-rubric-traceability) and
 The review preserves a trustworthy audit trail: evidence, history, timestamps,
 test results, screenshots, approvals, benchmarks, compliance claims, and
 deployment results remain unaltered. Git history and original dates are
-preserved. Historical issues/PRs retain their context, while future evidence is
-clearly identified as planned, recommended, or requiring confirmation.
+preserved. Historical issues/PRs and the Kanban board retain their context and
+state, while future evidence is clearly identified as planned, recommended, or
+requiring confirmation.
 
 ## Final quality validation
 
@@ -227,6 +249,10 @@ Results:
   official MySQL 8.4 manual rejected the automated client with 403 and is
   therefore recorded as reachable-but-not-automatically-verified. This snapshot
   does not guarantee future availability, content correctness, or legal authority.
+- The 2026-08-06 compliance/security/Agile follow-up reran the relative-link
+  checker across 34 Markdown files: 328 file links and 26 heading anchors
+  resolved with zero broken relative targets. No application code changed, so
+  no new application-test result is claimed for that follow-up.
 - The changed documentation passed the mojibake and organization-specific
   branding check.
 - The scoped private-key/common-token-marker check returned zero findings; a
@@ -255,5 +281,8 @@ Results:
 External links use authoritative sources where practical but can change after
 review. Evidence details and boundaries are recorded as
 [`EVD-DOC-001`](evidence-index.md#evd-doc-001-final-branch-validation),
+[`EVD-DOC-002`](evidence-index.md#evd-doc-002-compliancesecurity-documentation-consistency-validation),
+[`EVD-COMPLIANCE-001`](evidence-index.md#evd-compliance-001-india-privacysecurity-engineering-assessment),
+[`EVD-AGILE-001`](evidence-index.md#evd-agile-001-github-projects-kanban-delivery-record),
 [`EVD-SYSTEM-001`](evidence-index.md#evd-system-001-mysql-compose-and-runtime-verification),
 and [`EVD-BROWSER-001`](evidence-index.md#evd-browser-001-browser-and-automated-accessibility-verification).

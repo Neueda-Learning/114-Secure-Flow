@@ -172,28 +172,26 @@ COMPOSE_PROJECT_NAME=secureflow-smoke APP_PORT=18080 \
 
 ## Published image status
 
-The workflow intends to publish:
+The workflow publishes:
 
 ```text
 ghcr.io/neueda-learning/114-secure-flow:latest
 ```
 
-The reviewed latest `main` run successfully built the image; the registry step
-then returned `denied`. The workflow grants `packages: write` only to the
-publication job and signs in with `GITHUB_TOKEN`. GitHub settings inspection on
-2026-08-06 verified that the package is linked to this repository, inherits its
-access, and lists `114-Secure-Flow` with **Admin** under **Manage Actions
-access**. Repository Actions settings also showed a locked organization-level
-default of read-only contents/packages. That policy is the leading explanation
-for the denied token, but publication must be rerun to prove the cause and fix.
+Main [run 31098653366](https://github.com/Neueda-Learning/114-Secure-Flow/actions/runs/31098653366)
+successfully completed the image-build and GHCR publication job for merge commit
+`13738e3`. The workflow grants `packages: write` only to that job and signs in
+with `GITHUB_TOKEN`. This live result supersedes the earlier historical run
+that returned `denied`.
 
-An organization/enterprise Actions administrator must allow this repository's
-workflow token to publish packages, or approve a separately governed delivery
-credential. Do not add a personal token without owner-approved storage,
-rotation, and least privilege. Then rerun delivery and verify the package
-timestamp/digest. See GitHub's
+GitHub settings inspection on 2026-08-06 verified that the package is linked to
+this repository, inherits its access, and lists `114-Secure-Flow` with **Admin**
+under **Manage Actions access**. The repository-level default remains read-only;
+the successful run demonstrates that the explicit job-level package permission
+is accepted. See GitHub's
 [package-permissions guidance](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages).
-Adding an immutable SHA tag is the recommended release-traceability enhancement.
+Adding immutable SHA/digest tags, signing, provenance and an independent pull
+check are the recommended release-traceability enhancements.
 
 The image contains only the application and still needs MySQL plus `DB_URL`,
 `DB_USERNAME`, and `DB_PASSWORD`.

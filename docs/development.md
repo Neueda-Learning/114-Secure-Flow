@@ -112,8 +112,8 @@ alerts and should use a disposable environment.
 - **Flyway validation fails:** do not bypass it. Compare migration files with
   `flyway_schema_history` and determine whether a migration was changed.
 - **Quality checks pass but a later delivery step needs attention:** inspect the
-  remaining workflow steps. The reviewed `main` run reached registry
-  publication after successful quality checks and needs permission alignment.
+  remaining workflow steps and job permissions. Main run 31098653366 proves
+  that the current pipeline can complete its GHCR publication stage.
 - **Mojibake/corrupted symbols:** ensure editors use UTF-8. Documentation uses
   plain ASCII diagrams where practical.
 

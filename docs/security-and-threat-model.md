@@ -4,7 +4,8 @@
 
 This assessment documents current controls, threats, and a prioritized security
 maturity roadmap for owners, developers, operators, and reviewers. It is based
-on source and configuration inspection of `main` commit `9379af1`.
+on source/configuration inspection and retained workflow evidence for `main`
+commit `13738e3`.
 
 The assessment is a strong engineering baseline that can be complemented by
 penetration testing, qualified assurance, SAST/DAST, dependency/container/
@@ -45,7 +46,7 @@ scope expansion.
 | Control | Evidence | Current scope / next enhancement |
 |---|---|---|
 | Loopback-only host bind | `compose.yaml` | Protects default local Compose; add container/network policy if the boundary expands |
-| Non-root application user | `Dockerfile` | Limits application-container privilege; runtime UID inspection can add operational evidence |
+| Non-root application user | `Dockerfile`, `verify-running-app.sh`, EVD-CI-004 | Limits application-container privilege; CI verified application UID 100 |
 | Server-side field validation | DTO/controller/service | Covers formats/ranges; identity, rate, and payload controls are planned shared-use layers |
 | ORM parameter binding | JPA repository queries | Reduces SQL injection risk in current queries; future native/dynamic queries need review |
 | Controlled alert transitions | `AlertService` and tests | Prevents invalid state order; any caller can invoke valid transitions |
@@ -55,7 +56,7 @@ scope expansion.
 | `.env`/build/log ignore rules | `.gitignore`, `.dockerignore` | Reduces accidental inclusion; dedicated history/runtime secret controls can complement it |
 | Minimal actuator exposure | health and info only | Keeps metadata scope small; add endpoint authorization for shared use |
 | Escaping helper for dynamic HTML | `app.js` | Requires continued review of every HTML construction path |
-| CI quality gate | Workflow/Maven/JaCoCo | Automates quality checks; add security scans and retain stage-specific delivery evidence |
+| CI quality and system gate | Workflow/Maven/JaCoCo/MySQL/Compose/Playwright/axe-core | [Main run 31098653366](https://github.com/Neueda-Learning/114-Secure-Flow/actions/runs/31098653366) passed build, tests, MySQL/Compose/browser checks and GHCR publication; add security scanning and immutable release identity |
 
 ## Controls in the active maturity roadmap
 
@@ -68,8 +69,9 @@ scope expansion.
   SHAs for stronger immutability.
 - A documentation-review pattern check found zero obvious credential markers;
   add a specialist secret/history scan for deeper assurance.
-- Browser code includes accessibility semantics; add independent security and
-  accessibility browser testing.
+- Browser automation covers a transaction journey, chart selection and
+  automatically detectable WCAG A/AA issues in one Chromium state; add manual
+  accessibility, broader browser states and specialist security testing.
 
 ## Planned shared-environment controls
 
@@ -152,9 +154,10 @@ see [India privacy/compliance](privacy-compliance-india.md).
 Priority order:
 
 1. Keep network exposure local until identity/TLS/secrets are implemented.
-2. Resolve GHCR permissions and establish immutable artifact identity.
+2. Extend the successful GHCR publication with immutable SHA/digest tags,
+   artifact signing and provenance verification.
 3. Add dependency, container, secret, and source scanning with triage ownership.
-4. Add MySQL and security regression tests.
+4. Retain the MySQL system checks and add focused security regression tests.
 5. Pin actions/images, generate SBOM/provenance, and define patch cadence.
 6. Implement backup/restore and operational monitoring.
 7. Conduct independent threat-model, penetration, privacy, and legal reviews.

@@ -1,100 +1,195 @@
-# India privacy, legal, and compliance considerations
+# India privacy, security, and compliance considerations
 
-## Important notice
+## Document control
 
-This engineering assessment provides a responsible starting point for privacy
-and compliance planning. Formal legal conclusions remain with qualified Indian
-legal, privacy, security, and sector specialists because applicability depends
-on the entity, data, purpose, contracts, sector, location, and commencement date.
+| Field | Value |
+|---|---|
+| Purpose | Map potentially relevant Indian privacy, cyber-security, accessibility, and financial-sector obligations to current repository evidence and responsible next actions |
+| Scope | SecureFlow educational transaction-monitoring demonstration at `main` commit `13738e3` |
+| Intended audience | Project owners, developers, reviewers, security/privacy teams, and qualified Indian legal or sector specialists |
+| Review snapshot | 2026-08-06 |
+| Current status | Engineering assessment; not a legal opinion, certification, or compliance declaration |
+| Maintenance owner | Project owner, supported by the security owner and qualified legal/privacy reviewer before any real-data or shared deployment |
 
-## Scope and current context
+## Assurance boundary
 
-SecureFlow is an educational transaction-monitoring demonstration with
-synthetic demo identifiers. This privacy-preserving usage boundary is explicit;
-technical prevention and additional governance are planned before any future
-real-data scope.
+SecureFlow currently uses synthetic demonstration identifiers and is designed
+for local learning and review. The repository does **not** establish that the
+application is legally compliant, suitable for a regulated institution, or
+approved for real customer data. Applicability depends on the operating entity,
+data, purpose, contracts, sector, deployment location, and the law in force at
+the relevant time.
 
-## Primary official sources reviewed
+The evidence below separates:
 
-- [Digital Personal Data Protection Act, 2023](https://www.meity.gov.in/static/uploads/2024/02/Digital-Personal-Data-Protection-Act-2023.pdf)
-- [Digital Personal Data Protection Rules, 2025 and related notifications](https://www.meity.gov.in/documents/act-and-policies/digital-personal-data-protection-rules-2025-gDOxUjMtQWa?pageTitle=Digital-Personal-Data-Protection-Rules-2025686cadad39.pdf)
-- [DPDP phased commencement notification, 13 November 2025](https://www.meity.gov.in/static/uploads/2025/11/c56ceae6c383460ca69577428d36828b.pdf)
-- [Information Technology Act, 2000](https://www.indiacode.nic.in/handle/123456789/1999?locale=en)
-- [IT Reasonable Security Practices and Sensitive Personal Data Rules, 2011 (WIPO Lex copy)](https://wipolex-res.wipo.int/edocs/lexdocs/laws/en/in/in098en.html)
-- [Government of India clarification on the 2011 Rules](https://www.pib.gov.in/newsite/erelcontent.aspx?lang=2&reg=48&relid=74990)
-- [Rights of Persons with Disabilities Act, 2016](https://www.indiacode.nic.in/handle/123456789/2155?locale=en)
-- [Guidelines for Indian Government Websites and Apps (GIGW 3.0)](https://guidelines.india.gov.in/)
-- [RBI KYC Amendment Directions, 2025](https://www.rbi.org.in/scripts/NotificationUser.aspx/searchnew/searchnew/NotificationUser.aspx?Id=12866)
-- [CERT-In directions under section 70B](https://www.cert-in.org.in/PDF/CERT-In_Directions_70B_28.04.2022.pdf)
+- **Implemented**: directly supported by source, configuration, tests, or a
+  retained GitHub Actions run.
+- **Documented**: a policy or design expectation exists but has not been
+  independently assured.
+- **Required before scope expansion**: a control or decision needed before
+  shared, regulated, or real-personal-data use.
+- **Qualified review required**: applicability or sufficiency must be decided
+  by an appropriately qualified owner.
 
-The DPDP framework has phased commencement dates. As of the review date,
-different provisions have different effective dates; owners must confirm which
-requirements are in force at the time and for the proposed processing.
+## Authoritative Indian sources reviewed
 
-## Assessment matrix
+| Source | Relevance to this assessment | Review note |
+|---|---|---|
+| [Digital Personal Data Protection Act, 2023](https://www.meity.gov.in/static/uploads/2024/02/Digital-Personal-Data-Protection-Act-2023.pdf) | Digital personal-data processing, duties, rights, safeguards, breach and governance concepts | Apply only after confirming the relevant provision's commencement and the project's role/data flow |
+| [Digital Personal Data Protection Rules, 2025 and related notifications](https://www.meity.gov.in/documents/act-and-policies/digital-personal-data-protection-rules-2025-gDOxUjMtQWa?pageTitle=Digital-Personal-Data-Protection-Rules-2025686cadad39.pdf) | Operational detail and the official implementation timeline | MeitY source includes the Rules, corrigendum and timeline material |
+| [DPDP phased commencement notification, 13 November 2025](https://www.meity.gov.in/static/uploads/2025/11/c56ceae6c383460ca69577428d36828b.pdf) | Establishes different commencement points for different Act provisions | Timeline summarized below; legal owner must recheck later notifications |
+| [Information Technology Act, 2000](https://www.indiacode.nic.in/handle/123456789/1999?locale=en) | Cyber-law and security context | Applicability and interaction with later legislation require legal review |
+| [IT Reasonable Security Practices and Sensitive Personal Data Rules, 2011](https://wipolex-res.wipo.int/edocs/lexdocs/laws/en/in/in098en.html) and [Government clarification](https://www.pib.gov.in/newsite/erelcontent.aspx?lang=2&reg=48&relid=74990) | Historical/transitional SPDI and reasonable-security-practice context | Linked for applicability analysis; not treated as a current compliance conclusion |
+| [CERT-In directions under section 70B](https://www.cert-in.org.in/PDF/CERT-In_Directions_70B_28.04.2022.pdf) | Incident reporting, time synchronization, log and cooperation considerations | Security/legal owners must determine whether and how the directions apply to a future operator |
+| [Rights of Persons with Disabilities Act, 2016](https://www.indiacode.nic.in/handle/123456789/12914?locale=en) | Accessibility and equal-access context | Formal applicability and conformance require qualified review |
+| [Guidelines for Indian Government Websites and Apps 3.0](https://guidelines.india.gov.in/) | Indian public-sector accessibility/usability reference | Useful design reference; not claimed as mandatory for this educational application |
+| [RBI KYC Amendment Directions, 2025](https://www.rbi.org.in/scripts/NotificationUser.aspx/searchnew/searchnew/NotificationUser.aspx?Id=12866) | Illustrates current regulated-entity KYC, monitoring and audit expectations | SecureFlow is not represented as a KYC control or RBI-approved system |
 
-| Area | Current implementation/evidence | Growth opportunity / control objective | Recommended next step | Legal review |
+### DPDP commencement snapshot
+
+The 13 November 2025 Gazette notification provides phased commencement:
+
+| Phase | Notification wording | Engineering consequence as of 2026-08-06 |
+|---|---|---|
+| Publication date | Listed provisions commenced on publication | Legal owner should identify whether any immediately commenced institutional/governance provisions affect the proposed operator |
+| One year from publication | Section 6(9) and section 27(1)(d) commence after one year | Track the 13 November 2026 milestone and revalidate the design before that date if real processing is proposed |
+| Eighteen months from publication | The notification lists the main processing, notice, consent, rights, obligations and related provisions for the later phase | Track the 13 May 2027 milestone and complete the required operating controls well before any applicable real-data use |
+
+This is an engineering reading of the official notification, not legal advice.
+Later notifications, corrigenda, court decisions, regulator guidance, or entity-
+specific obligations can change the applicable position.
+
+## Project data and flow inventory
+
+| Data group | Current fields/examples | Repository source | Current classification and boundary |
+|---|---|---|---|
+| Transaction | transaction ID, account ID, payee ID, amount, currency, description, timestamps | [`V1__create_tables.sql`](../src/main/resources/db/migration/V1__create_tables.sql), [`CreateTransactionRequest.java`](../src/main/java/com/neueda/secureflow/transaction/dto/CreateTransactionRequest.java) | Synthetic demo data only; identifiers could become personal or confidential if real values were entered |
+| Alert | rule, severity, status, message, linked transactions, resolution notes, timestamps | [`AlertEntity.java`](../src/main/java/com/neueda/secureflow/alert/AlertEntity.java), [`AlertHistoryEntity.java`](../src/main/java/com/neueda/secureflow/alert/AlertHistoryEntity.java) | Synthetic operational data; free-text notes create an elevated collection/disclosure risk |
+| Demo seed | generated accounts, payees, amounts, descriptions and current timestamps | [`DemoDataService.java`](../src/main/java/com/neueda/secureflow/demo/DemoDataService.java) | Reproducible synthetic demonstration data; endpoint is unauthenticated inside the local trust boundary |
+| Runtime/CI | application logs, test reports, JAR, browser evidence and container image | [CI workflow](../.github/workflows/pipeline.yml), [testing guide](testing.md) | No real/customer data is intended; repository policy prohibits secrets and sensitive evidence |
+| Database storage | MySQL named volume containing the above records | [`compose.yaml`](../compose.yaml) | Local persistence is verified; approved retention, deletion, backup and recovery controls are not yet implemented |
+
+### Data-flow boundary
+
+`Browser -> HTTP API -> service/rule evaluation -> JPA -> MySQL` is the current
+application flow. GitHub Actions separately processes source, synthetic tests,
+reports and container artifacts. See the [architecture](architecture.md),
+[API guide](api.md), and [security threat model](security-and-threat-model.md)
+for trust boundaries and entry points.
+
+## Implemented safeguards and verifiable evidence
+
+| Safeguard | Evidence | Verification status | Limitation |
+|---|---|---|---|
+| Synthetic demonstration boundary | [`DemoDataService.java`](../src/main/java/com/neueda/secureflow/demo/DemoDataService.java), [README](../README.md), [security policy](../SECURITY.md) | Implemented/documented | The API does not technically prevent a user from entering a real identifier |
+| Server-side validation and bounded paging | [`CreateTransactionRequest.java`](../src/main/java/com/neueda/secureflow/transaction/dto/CreateTransactionRequest.java), controllers, `badRequestsHaveClearErrors` | Source and integration-test evidence | Validation is not identity, authorization, purpose control, or data-loss prevention |
+| Controlled alert lifecycle and resolution notes | [`AlertService.java`](../src/main/java/com/neueda/secureflow/alert/AlertService.java), [`SecureFlowTest.java`](../src/test/java/com/neueda/secureflow/SecureFlowTest.java) | Integration tests passed in the retained main workflow | Status history does not yet record an authenticated actor |
+| Output escaping for dynamic UI content | [`app.js`](../src/main/resources/static/app.js) | Source-inspected central helper | Every dynamic HTML path still requires continuing review; CSP/security browser tests are future work |
+| Local-only host exposure | [`compose.yaml`](../compose.yaml) | `127.0.0.1` bind verified by source and system workflow | Does not protect a future externally exposed deployment |
+| Non-root container and health check | [`Dockerfile`](../Dockerfile), [`verify-running-app.sh`](../scripts/verify-running-app.sh) | UID 100 and health verified in CI | Host, orchestrator, filesystem and network hardening remain environment-specific |
+| MySQL persistence and schema control | Flyway migration, Compose, [`verify-volume-persistence.sh`](../scripts/verify-volume-persistence.sh) | MySQL 8.4 startup and restart continuity passed | Named-volume continuity is not backup, restore, retention or deletion evidence |
+| Browser/accessibility automation | [`dashboard.spec.js`](../browser-tests/dashboard.spec.js), Playwright and axe-core | Two browser checks passed; no automatically detectable WCAG A/AA violation in the tested state | Manual keyboard, screen-reader, zoom/reflow, other-state and specialist review remain necessary |
+| CI quality and artifact delivery | [Main workflow run 31098653366](https://github.com/Neueda-Learning/114-Secure-Flow/actions/runs/31098653366) | Maven, MySQL/Compose/browser checks and GHCR publication succeeded | No SAST, DAST, secret, dependency, container, SBOM/signing or provenance gate yet |
+| Vulnerability reporting and secret-response guidance | [Security policy](../SECURITY.md) | Documented process | Dedicated security contact, service levels and exercises are future governance controls |
+
+## India-focused control assessment
+
+| Area | Current position and evidence | Gap / risk | Required next action and owner | Status |
 |---|---|---|---|---|
-| Lawful purpose, notice, consent | Synthetic-only learning scope is documented | Formal purpose/notice becomes necessary if real-data scope is approved | Keep synthetic-only; define controller/fiduciary role, purpose and notice before real data | Required |
-| Data inventory/classification | Schema/source clearly identify stored fields | Add formal personal/sensitive/business classifications and mapped flows | Create a field-level inventory, purpose, source, recipient, location, retention, owner | Required |
-| Data minimization | Required fields are limited; free-text descriptions/notes exist | Free text can collect excessive/sensitive data | Define allowed content, reduce fields, warnings, masking and review | Required |
-| Accuracy | Server timestamps and field validation improve consistency | Add an authorized correction and data-owner verification workflow for real data | Define correction authority, auditability, and downstream propagation | Required if personal data |
-| Retention | Named volume behavior is explicit and predictable | Introduce purpose-based retention and defensible deletion before real data | Define retention per field/purpose; automate deletion and legal holds | Required |
-| Deletion/erasure | Whole demo environments can be reset reproducibly | Add linked-record subject deletion/export for approved personal-data use | Design subject lookup, dependency-aware deletion/anonymization, evidence, exceptions | Required |
-| Individual rights/grievance | Synthetic demo scope avoids representing a rights workflow as implemented | Add a responsible contact and request workflow when applicability is confirmed | Appoint owner/contact and implement verified request workflow where applicable | Required |
-| Children’s data | Children’s data is outside the intended scope | Reinforce the boundary with policy or age/guardian controls if scope changes | Prohibit in usage policy or add verified age/guardian controls | Required before such use |
-| Security safeguards | Validation, local bind, non-root container, and documented threat model | Extend controls with identity, TLS, managed secrets, scanning, recovery, and monitoring | Execute prioritized security plan and independent assessment | Required |
-| Breach response | Private vulnerability guidance establishes a reporting channel | Add personal-data incident decisions, notification ownership, and exercises | Define detection, containment, evidence, authority, notification, drills | Required |
-| Cross-border processing | Build-service locations and uncertainty are transparently identified | Map runtime, backups, logs, support, and recipients before real-data deployment | Review restrictions, notices, contracts, and transfer safeguards | Required |
-| Processors/vendors | GitHub, Maven, and registry build services are inventoried | Add runtime processor, contract, subprocessor, retention, and transfer assessment | Keep real data out of build/issues/logs; conduct production vendor review | Required |
-| Data sharing/disclosure | Local-only default limits the initial trust boundary | Add identity, purpose-limited APIs, logging, masking, and least privilege for sharing | Implement and test the approved access model | Required |
-| IT Act/SPDI transition | Relevant current and transitional sources are linked | Convert the research baseline into an owned applicability decision | Counsel determines applicability and transition with DPDP commencement | Required |
-| CERT-In incident/log directions | Container logs provide an operational starting point | Add applicable time synchronization, retention, reporting, and controlled access | Security/legal teams determine applicability and implement the policy | Required |
-| Sector-specific financial obligations | Educational scope is explicitly distinguished from regulated controls | Map RBI/PMLA/payment obligations only if a regulated entity adopts the system | Regulated-entity counsel/compliance owners approve requirements before use | Required |
-| Accessibility | Skip link, labels, ARIA, keyboard-oriented features, focusable table regions, and a passing automated axe WCAG A/AA scan exist | Automation covers only detectable rules in one Chromium state | Add manual keyboard/screen-reader/zoom/reflow and specialist WCAG/GIGW/RPwD review | Required for formal claim |
-| Intellectual property/licensing | Direct and resolved dependency versions are inventoried | Make redistribution terms explicit and assess transitive/container licenses | Owner chooses project license and runs license review | Required |
+| Purpose, role, notice and consent | Synthetic educational purpose is explicit | No approved Data Fiduciary/processor mapping or real-data notice | Business/legal owner defines entity role, purpose, lawful basis and notices before real data | Required before scope expansion |
+| Data inventory and minimization | Stored fields and flows are mapped above; identifier length/content is bounded | Description and resolution-note free text could collect unnecessary or sensitive content | Product/privacy owner defines permitted content, masking, classification and collection warnings | Partially implemented |
+| Accuracy and correction | Server timestamps and input validation improve consistency | No authorized correction workflow or downstream correction evidence | Data owner defines correction authority, audit and propagation where applicable | Required before real data |
+| Retention, deletion and legal hold | Whole demo environments can be reset; volume continuity is tested | No purpose-based record retention, linked deletion/export, legal hold or backup expiry | Privacy/data owner approves schedules and developers implement/test lifecycle behavior | Not implemented for real data |
+| Data Principal requests and grievance | Not represented as implemented because the scope is synthetic | No identity-verified access, correction, erasure, nomination or grievance workflow | Legal/privacy owner confirms applicable rights and accountable contact; team implements/test approved process | Not implemented |
+| Children's data | Outside intended scope | No technical age/guardian control | Prohibit through approved use policy or implement verified controls before such processing | Out of scope; review required if changed |
+| Security safeguards | Validation, local bind, non-root runtime, schema control, CI and threat model exist | No identity, authorization, TLS, managed secrets, security scanning, centralized monitoring or tested recovery | Security owner delivers prioritized roadmap and independent assessment before shared use | Partially implemented |
+| Personal-data breach response | Private vulnerability path and basic logs exist | No approved personal-data incident classification, notification ownership, evidence retention or exercise | Security/legal owners create and test an incident/breach playbook | Documented foundation |
+| CERT-In operations | Logs and GitHub evidence provide an operational starting point | Applicability, time synchronization, log retention/location and incident-reporting process are not approved | Security/legal owners map the current directions to the actual operator and deployment | Qualified review required |
+| Cross-border processing and vendors | GitHub, Maven/GHCR and build components are inventoried | Runtime, support, logs, backups, subprocessors, contracts, location and transfers are not assessed for real data | Privacy/procurement/security owners complete vendor and transfer assessment | Required before real data |
+| Access, sharing and audit | Local-only boundary and status history reduce the initial scope | Any local caller can read/mutate; no authenticated actor or immutable audit record | Implement least-privilege roles, actor attribution, purpose-limited APIs and protected audit retention | Required before shared use |
+| RBI/PMLA/financial-sector obligations | Deterministic demo rules are transparent; RBI source is linked | Rules are not validated KYC/AML/STR/sanctions controls and have no regulated-entity approval | Regulated-entity compliance/legal owners perform obligation and control mapping before adoption | Not represented as implemented |
+| Accessibility | Semantic UI features and automated axe check exist | Automation covers only detectable rules in one Chromium state | Accessibility owner completes manual WCAG/GIGW/RPwD assessment and remediation evidence | Partially verified |
+| Intellectual property/licensing | Direct/resolved technology inventory exists | No approved project licence, transitive/container licence report or redistribution decision | Repository owner selects licence and completes specialist licence review | Documented inventory; approval pending |
 
-## DPDP-specific engineering questions
+## DPDP engineering approval checklist
 
-Before real personal data, owners should document:
+Before approving any real-personal-data scope, record evidence-backed answers:
 
-1. Who is the Data Fiduciary, processor, and Data Principal for each flow?
-2. Which purpose and legal basis applies to each field and rule result?
-3. What notice is provided, in which languages/form, and when?
-4. How are consent withdrawal or other lawful-basis changes handled?
-5. How can a person access, correct, erase, or complain, subject to lawful
-   exceptions?
-6. What retention/deletion schedule applies to transactions, alerts, history,
-   logs, backups, and evidence?
-7. What safeguards, processor contracts, breach procedures, and contact points
-   exist?
-8. Do Significant Data Fiduciary or other enhanced obligations apply?
-
-These questions form a concrete approval checklist. Complete operational
-answers are required only before the project expands into real-personal-data use.
+1. Which entity is the Data Fiduciary, processor and Data Principal for each
+   flow?
+2. Which purpose and lawful basis applies to every field, rule result, log and
+   evidence artifact?
+3. Which statutory phase and current rule applies on the intended go-live date?
+4. What notice is delivered, when, in which language/form, and how is proof
+   retained?
+5. How are withdrawal, access, correction, erasure, nomination and grievance
+   requests authenticated, completed and evidenced where applicable?
+6. What retention, deletion, legal-hold and backup schedule applies to
+   transactions, alerts, notes, history, logs and evidence?
+7. Which safeguards, processor contracts, transfer controls, breach procedures
+   and accountable contacts are approved?
+8. Do Significant Data Fiduciary, sector-specific, CERT-In or other enhanced
+   obligations apply?
 
 ## Sector-specific boundary
 
-The deterministic rules have a clear educational purpose and are not presented
-as KYC, AML, suspicious-transaction reporting, sanctions screening, or another
-regulated control. If a regulated use is proposed, entity-specific RBI, PMLA,
-payment-security, record-keeping, audit, and reporting requirements must first
-be mapped and independently approved.
+SecureFlow is not presented as KYC, customer due diligence, suspicious-
+transaction reporting, sanctions screening, fraud-loss prevention, or an
+RBI/PMLA-approved control. A regulated deployment would require an entity-
+specific obligation inventory, model/rule validation, governance, maker-checker
+controls, record keeping, audit, reporting, operational resilience and formal
+approval. Current deterministic alerts are educational examples only.
 
-## Privacy-by-design recommendations
+## Risk treatment priorities
 
-- default to synthetic/non-identifying data in demo environments
-- block or warn against real/customer data entry
-- minimize free text and define data classification
-- add role-based access and attributable audit history
-- provide purpose/notice/retention metadata and deletion/export workflows
-- encrypt and restrict data, logs, backups, and evidence
-- test subject-request and deletion behavior, including linked alerts/history
-- complete a DPIA/privacy impact assessment before material real-data use
+1. Keep use synthetic and local until identity, authorization, TLS and managed
+   secrets are implemented and tested.
+2. Add technical warnings/controls that prevent real customer data from being
+   entered into demo, test, issue, log and CI channels.
+3. Define field-level purpose, classification, retention, deletion and access
+   ownership.
+4. Add authenticated roles, actor-attributed audit history and immutable
+   security/audit-event retention.
+5. Implement dependency, secret, source, container and dynamic security scans
+   with triage ownership and severity policy.
+6. Define and exercise incident response, backup/restore and applicable breach
+   or CERT-In reporting decisions.
+7. Complete qualified privacy, security, accessibility, sector and legal review
+   before any real-data/shared deployment.
 
-## Maintenance
+These priorities are mirrored in the [risk register](risk-register.md) and
+[future scope](future-scope.md).
 
-Review at every change in law, commencement notification, data field, purpose,
-user group, geography, vendor, deployment, retention, external integration, or
-AI capability. Record counsel decisions separately; do not rewrite this document
-to imply legal approval.
+## Rubric and evidence traceability
+
+| Rubric theme | Repository evidence | Honest evaluation boundary |
+|---|---|---|
+| Apply compliance, security and risk practices | This assessment, [threat model](security-and-threat-model.md), [risk register](risk-register.md), validation, local bind and non-root runtime | Engineering controls are evidenced; legal compliance is not claimed |
+| Proactively identify and mitigate risk | Data/control matrices, trust boundaries and prioritized treatments | Implementation evidence is linked separately from future recommendations |
+| Integrate security/compliance into daily work | [PR template](../.github/pull_request_template.md), [contribution checks](../CONTRIBUTING.md), CI and traceability matrix | Continued PR use and independent reviews provide longitudinal evidence |
+| Anticipate regulatory change | DPDP phased timeline, dated official-source register and maintenance triggers | Qualified owners must revalidate future notifications and applicability |
+
+Stable evidence identifiers are maintained in the
+[evidence index](evidence-index.md); requirement and rubric mappings are in the
+[traceability matrix](traceability-matrix.md).
+
+## Known limitations and assumptions
+
+- The source review is current only for the stated date and commit.
+- The project contains synthetic demo data by intent, but the unauthenticated
+  API does not technically enforce that boundary.
+- No qualified legal, privacy, penetration, accessibility, sector or licensing
+  opinion is included in the repository.
+- No production operator, Data Fiduciary, retention schedule, incident contact,
+  vendor assessment or deployment jurisdiction has been approved.
+- Automated tests prove their stated scenarios only; they do not demonstrate
+  legal compliance or complete security.
+
+## Maintenance guidance
+
+Re-review this document when a law or commencement notification changes, and
+whenever the project changes data fields, purpose, user group, geography,
+vendor, deployment, retention, external integration, identity model or AI
+capability. The project owner should record the reviewer, date, affected
+sections, source links and resulting decisions without backdating or replacing
+historical evidence.

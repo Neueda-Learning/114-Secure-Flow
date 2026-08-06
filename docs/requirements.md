@@ -30,13 +30,13 @@ implementation. Product-owner confirmation is required for business intent.
 
 | ID | Requirement | Evidence | Status |
 |---|---|---|---|
-| `QR-01` | Production source shall compile on Java 21 and package as an executable JAR. | `pom.xml`, Maven Wrapper, EVD-CI-001 | Verified |
-| `QR-02` | The Maven `verify` lifecycle shall run tests and enforce at least 70% measured line coverage with documented exclusions. | `pom.xml`, EVD-CI-001 | Verified for referenced CI run |
-| `QR-03` | Flyway shall create/validate the schema and Hibernate shall validate entity mappings. | V1 migration, configuration, H2 tests, MySQL-backed Compose startup | Verified against H2 and locally against MySQL 8.4; CI reproduction awaits publication |
-| `QR-04` | Local Compose shall start MySQL before the application and retain data in a named volume. | `compose.yaml`, runtime smoke scripts, local WSL runtime/restart evidence | Verified locally: healthy start, API/database round-trip, and 21 rows retained across stop/start |
-| `QR-05` | The application container shall run as a non-root user and expose a health check. | `Dockerfile` | Verified by source inspection; runtime UID/health inspection is recommended |
-| `QR-06` | Pull requests and pushes to `main` shall run the Maven gate and Docker build; pushes shall attempt GHCR publication. | Workflow and GitHub runs | Verified; all application stages passed and registry permissions are the isolated follow-up |
-| `QR-07` | Significant claims shall be linked to reproducible source, test, configuration, or CI evidence and limitations. | Documentation network | Implemented and locally validated; focused PR publication is next |
+| `QR-01` | Production source shall compile on Java 21 and package as an executable JAR. | `pom.xml`, Maven Wrapper, EVD-CI-004 | Verified |
+| `QR-02` | The Maven `verify` lifecycle shall run tests and enforce at least 70% measured line coverage with documented exclusions. | `pom.xml`, EVD-CI-004 | Verified for the referenced main run |
+| `QR-03` | Flyway shall create/validate the schema and Hibernate shall validate entity mappings. | V1 migration, configuration, H2 tests, MySQL-backed Compose CI | Verified against H2 and MySQL 8.4 |
+| `QR-04` | Local Compose shall start MySQL before the application and retain data in a named volume. | `compose.yaml`, runtime scripts, EVD-SYSTEM-001 and EVD-CI-004 | Verified locally and in GitHub CI |
+| `QR-05` | The application container shall run as a non-root user and expose a health check. | `Dockerfile`, runtime smoke script, EVD-CI-004 | Verified by source and CI runtime inspection |
+| `QR-06` | Pull requests and pushes to `main` shall run the Maven and system/browser gates; pushes shall publish the image to GHCR after both gates pass. | Workflow and main run 31098653366 | Verified for merge commit `13738e3` |
+| `QR-07` | Significant claims shall be linked to reproducible source, test, configuration, or CI evidence and limitations. | Documentation network and EVD-DOC-001/EVD-CI-004 | Implemented, validated and published through PR #48 |
 | `QR-08` | Sensitive values and real data shall not be committed. | Ignore rules/policy and limited pattern review | Source safeguards and scoped marker check verified; dedicated history scanning is recommended |
 | `QR-09` | The default Compose bind shall be local-only. | `127.0.0.1:8080:8080` | Verified by source inspection |
 | `QR-10` | Manual load tests shall remain outside Maven, startup, and CI. | `load-tests/`, workflow | Verified by source inspection |

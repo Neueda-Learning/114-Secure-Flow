@@ -9,10 +9,30 @@ that PR/commit and is not automatically evidence for current `main`.
 
 Repository: [Neueda-Learning/114-Secure-Flow](https://github.com/Neueda-Learning/114-Secure-Flow)
 
+## Project board snapshot
+
+The repository is connected to the private organization project
+[Team SAFE's Kanban Board](https://github.com/orgs/Neueda-Learning/projects/18).
+Authenticated read-only inspection on 2026-08-06 found 18 linked issue items:
+17 Done and one Backlog. The board defines Backlog, Ready, In progress, In
+review, Done, and Blocked states, exposes five planning views, displays seven
+enabled workflows, and includes burn-up and status charts.
+
+This board evidence strengthens the issue/PR inventory with planning state,
+ownership, WIP signals, and incremental completion. Because the project is
+private, evaluators need authorized organization access; the repository's
+public issue and PR links provide the complementary evidence trail. See
+[Agile delivery and Kanban evidence](agile-delivery-evidence.md) and
+[`EVD-AGILE-001`](evidence-index.md#evd-agile-001-github-projects-kanban-delivery-record).
+
 ## Current baseline and open work
 
-- `main`: commit `9379af1`; tests, coverage, artifact upload, and image
-  construction passed, with GHCR permission alignment remaining for publication.
+- `main`: commit `13738e3`; tests, coverage, artifacts, MySQL/Compose/browser
+  checks, image construction, and GHCR publication passed in run 31098653366.
+- PR [#48](https://github.com/Neueda-Learning/114-Secure-Flow/pull/48):
+  merged the audit documentation and system verification. CI passed; the merge
+  used an authorized administrator bypass while the required independent review
+  was still pending, so no reviewer approval is claimed.
 - Issue [#42](https://github.com/Neueda-Learning/114-Secure-Flow/issues/42):
   open; chart two-column layout; assigned to `RushilAlagh`.
 - PR [#46](https://github.com/Neueda-Learning/114-Secure-Flow/pull/46):
@@ -123,9 +143,9 @@ complement it when assessing individual contribution quality.
 ## Documentation review decision
 
 Historical issues and merged PR bodies retain their authentic context. This
-snapshot, requirements, evidence, risk, and traceability network supplies the
-current interpretation. Open items can be strengthened through clearly dated
-updates that preserve original evidence.
+snapshot, the Kanban record, requirements, evidence, risk, and traceability
+network supply the current interpretation. Open items can be strengthened
+through clearly dated updates that preserve original evidence.
 
 ## Maintenance
 

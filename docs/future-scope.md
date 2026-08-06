@@ -10,7 +10,7 @@ tests, and evidence agree. Owners can prioritize by user value and risk reductio
 
 | Area | Proposed outcome | Preconditions/evidence for completion |
 |---|---|---|
-| CI delivery | Align GHCR ownership/permissions and publish immutable SHA/digest | Green main run, package/digest link, pull verification |
+| CI delivery | Extend successful `:latest` publication with immutable SHA/digest tags, signing and provenance | Green main run, package/digest link, signature/provenance verification and pull test |
 | Repository governance | Extend verified required-PR/one-approval protection with the new system check, stale-approval dismissal, conversation resolution, and branch cleanup policy | Updated settings evidence and retained PR approval |
 | Licensing | Select project license and produce dependency/container license inventory | Qualified owner/legal confirmation |
 | Test parity | Extend the implemented MySQL/Compose system check with targeted Testcontainers cases only where database-specific code requires them | Reproducible edge-case result and documented runtime cost |

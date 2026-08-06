@@ -133,7 +133,7 @@ executed bytecode; JUnit assertions decide expected behavior.
 
 ## CI evidence snapshot
 
-Latest reviewed `main` workflow:
+Historical `main` workflow retained for traceability:
 
 - Run: [31084398909](https://github.com/Neueda-Learning/114-Secure-Flow/actions/runs/31084398909)
 - Commit: `9379af1`
@@ -148,11 +148,25 @@ Latest reviewed `main` workflow:
   quality and construction stage passed
 
 This quality and delivery-step evidence remains valid for that commit and
-environment.
+environment. The later successful run below supersedes its registry limitation.
 
-## Final branch verification snapshot
+Current reviewed `main` workflow:
 
-The review branch was also checked locally with:
+- Run: [31098653366](https://github.com/Neueda-Learning/114-Secure-Flow/actions/runs/31098653366)
+- Commit: `13738e3`
+- `test-and-package`: passed
+- `MySQL, Compose and browser checks`: passed
+- `Publish container image`: passed
+- Evidence artifacts: JAR/JaCoCo and browser-test evidence retained by the run
+- GHCR image: `ghcr.io/neueda-learning/114-secure-flow:latest` published
+
+The run verifies the configured scenarios and environment. It does not replace
+manual accessibility, security, legal, backup/restore, target-host, or
+production-operability assessment.
+
+## Merged review-work verification snapshot
+
+The work later merged through PR #48 was also checked locally with:
 
 ```powershell
 .\mvnw.cmd --batch-mode clean verify

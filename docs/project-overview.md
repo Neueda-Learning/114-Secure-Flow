@@ -18,7 +18,7 @@ and engineering assessment rather than real financial operations.
 - synthetic demonstration-data generation
 - REST/OpenAPI interfaces and a health endpoint
 - Maven build, integration tests, Flyway migration, JaCoCo gate, Docker image,
-  local Docker Compose, GitHub Actions CI, and attempted GHCR publication
+  local Docker Compose, GitHub Actions CI, and verified GHCR publication
 
 ### Deliberately reserved for later maturity stages
 
@@ -41,18 +41,24 @@ and engineering assessment rather than real financial operations.
 
 ## Current status
 
-The source baseline is `main` commit `9379af1`. Source inspection and persistent
+The source baseline is `main` commit `13738e3`. Source inspection and persistent
 CI evidence verify seven HTTP integration tests, the Flyway V1 migration, the
-JaCoCo gate, JAR creation, and Docker image construction. All application
-quality stages passed; registry publication is the remaining delivery action
-because GHCR rejected the push. See
-[EVD-CI-001](evidence-index.md#evd-ci-001-main-quality-gate-and-registry-follow-up).
+JaCoCo gate, JAR creation, MySQL/Compose/browser checks, Docker image
+construction, and GHCR publication. See
+[EVD-CI-004](evidence-index.md#evd-ci-004-audit-review-pr-and-successful-main-delivery).
 
-The proposed review branch adds locally verified MySQL 8.4/Compose runtime and
-restart-persistence checks plus two Playwright/axe Chromium checks. These are
-recorded separately as [EVD-SYSTEM-001](evidence-index.md#evd-system-001-mysql-compose-and-runtime-verification)
-and [EVD-BROWSER-001](evidence-index.md#evd-browser-001-browser-and-automated-accessibility-verification)
-until published CI independently reproduces them.
+The MySQL 8.4/Compose runtime and restart-persistence checks plus two
+Playwright/axe Chromium checks are now merged and reproduced in GitHub Actions.
+Local detail remains in [EVD-SYSTEM-001](evidence-index.md#evd-system-001-mysql-compose-and-runtime-verification)
+and [EVD-BROWSER-001](evidence-index.md#evd-browser-001-browser-and-automated-accessibility-verification);
+the published result is [EVD-CI-004](evidence-index.md#evd-ci-004-audit-review-pr-and-successful-main-delivery).
+
+Planning and incremental delivery are recorded in a private GitHub Projects
+Kanban board with 18 linked issue items, explicit flow states, ownership, WIP
+indicators, seven enabled automations, and burn-up/status insights. See
+[EVD-AGILE-001](evidence-index.md#evd-agile-001-github-projects-kanban-delivery-record)
+and [Agile delivery evidence](agile-delivery-evidence.md). Authorized
+organization access is required to inspect the board itself.
 
 Draft PR [#46](https://github.com/Neueda-Learning/114-Secure-Flow/pull/46)
 proposes Linux continuous deployment. PR
@@ -69,7 +75,8 @@ presentation changes. Neither is part of this baseline.
 | Operator | Protects credentials/data and follows deployment/backup controls |
 | Mentor/evaluator | Assesses repository evidence within its stated limitations |
 
-Git history and issue assignments provide useful contribution evidence. A
+Git history, board ownership, issue assignments, and PR authorship provide
+useful contribution evidence. A
 future ownership table can formalize ongoing support and release responsibility.
 
 ## Success criteria
@@ -93,12 +100,13 @@ capacity claims become available only after their specialist validation stages.
 The project has a clear path from controlled learning use to greater operational
 maturity: identity/access control, managed credentials, protected demo actions,
 retention and recovery, automated dependency/security analysis, broader manual
-accessibility/compatibility assurance, and registry-permission alignment. Priorities and proposed
+accessibility/compatibility assurance, and immutable artifact provenance. Priorities and proposed
 owners are in the [risk register](risk-register.md).
 
 ## Related documents
 
 - [Requirements](requirements.md)
+- [Supplementary technology learning guide](supplementary-technology-guide.md)
 - [Architecture](architecture.md)
 - [Testing](testing.md)
 - [Mentor rubric evidence guide](mentor-review-guide.md)

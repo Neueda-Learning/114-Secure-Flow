@@ -11,6 +11,10 @@ a clear path to stronger governance.
 - Work is commonly developed on `feature/...` branches.
 - Pull requests generally target `main`.
 - GitHub Actions runs for every pull request and push to `main`.
+- A private GitHub Projects Kanban board connects 18 repository issues to
+  Backlog, Ready, In progress, In review, Done, and Blocked states. Its board,
+  priority, team, roadmap, and personal views make intake, ownership, flow, and
+  progress available to authorized project members.
 - History contains merge commits, direct feature commits, closed unmerged PRs,
   draft PRs, and long-lived remote branches.
 - `pom.xml` provides an artifact version; annotated Git releases are the next
@@ -18,10 +22,35 @@ a clear path to stronger governance.
 - GitHub settings inspection on 2026-08-06 verified that `main` requires pull
   requests, one approval, and the `test-and-package` status check, while force
   pushes and deletion remain disabled.
+- PR #48 passed its required CI but was merged using an authorized administrator
+  bypass while its independent review remained pending. This is an exception,
+  not approval evidence; future protected merges should follow the normal rule.
 - PR #47 already requested a reviewer; submitted review records are the next
   visible collaboration evidence for the open PRs.
 
-See [repository history](repository-history.md) for the dated inventory.
+See [Agile delivery and Kanban evidence](agile-delivery-evidence.md) for the
+authenticated board snapshot and [repository history](repository-history.md)
+for the dated issue/PR inventory.
+
+## Kanban planning and delivery
+
+The evidenced project workflow uses the board as the planning layer and GitHub
+Issues, pull requests, and Actions as the durable delivery layer:
+
+```text
+Board item -> assigned issue -> feature branch -> pull request
+           -> review and CI -> merge -> Done
+```
+
+At the 2026-08-06 snapshot, the board showed 17 Done items and one Backlog item,
+plus a burn-up chart recording incremental completion. It also displayed seven
+enabled project workflows and WIP indicators for active columns. Board status
+does not replace acceptance or testing evidence; those claims are established
+by the linked PR, source, tests, and CI run.
+
+The project is private, so maintainers should preserve public issue/PR links and
+arrange authorized board access for evaluators who need to inspect the planning
+layer.
 
 ## Branch naming convention
 
@@ -41,14 +70,14 @@ renamed because that would alter or confuse the audit trail.
 
 ## Branch lifecycle
 
-1. Create from current `main`.
-2. Link an issue or clearly explain why one is unnecessary.
+1. Select a Ready board item or agree a clearly scoped issue from Backlog.
+2. Create from current `main` and link the issue.
 3. Make focused commits with truthful messages.
 4. Rebase or merge current `main` only when needed; do not rewrite shared
    history without team agreement.
 5. Open one PR for the outcome and complete the template.
-6. Resolve review and CI findings.
-7. Merge using the repository-approved strategy.
+6. Move the item through active/review states and resolve review and CI findings.
+7. Merge using the repository-approved strategy and confirm the board outcome.
 8. Delete the remote branch after merge when no longer needed.
 
 The historical branch inventory supports owner-confirmed cleanup and future
@@ -127,13 +156,13 @@ Database migrations remain linear and must also be included in later versions.
 ## Protected-branch maturity recommendations
 
 The verified rule already requires a pull request, one approval, and
-`test-and-package`. Repository owners can extend it after the revised workflow
-has produced its first check run:
+`test-and-package`. The revised system workflow has now produced a successful
+main run, so repository owners can extend the rule:
 
 - target `main` with one ruleset or branch-protection rule
 - require pull requests and at least one independent approval
-- keep the verified `test-and-package` check required; after the first revised
-  workflow run, also require `MySQL, Compose and browser checks`
+- keep the verified `test-and-package` check required and consider requiring
+  the now-proven `MySQL, Compose and browser checks` job
 - dismiss stale approvals after material changes and require approval of the
   most recent reviewable push by someone other than its author
 - prevent force pushes and branch deletion

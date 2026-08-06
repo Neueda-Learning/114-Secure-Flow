@@ -14,16 +14,21 @@ duplicated across unrelated files.
    quality requirements.
 3. [Architecture](architecture.md) and [API reference](api.md) — implementation
    and data flow.
-4. [Testing](testing.md) and [evidence index](evidence-index.md) — what is
+4. [Supplementary technology guide](supplementary-technology-guide.md) —
+   beginner explanations of Flyway, MockMvc, JaCoCo, k6, and related project
+   tooling.
+5. [Testing](testing.md) and [evidence index](evidence-index.md) — what is
    verified, how, and which evidence layer comes next.
-5. [Traceability matrix](traceability-matrix.md) — requirement and rubric
+6. [Traceability matrix](traceability-matrix.md) — requirement and rubric
    mapping.
-6. [Mentor rubric evidence guide](mentor-review-guide.md) — concise review and
+7. [Mentor rubric evidence guide](mentor-review-guide.md) — concise review and
    presentation path across all four rubric areas.
-7. [Security and threat model](security-and-threat-model.md),
+8. [Agile delivery and Kanban evidence](agile-delivery-evidence.md) — planning,
+   ownership, flow, burn-up, and issue/PR traceability.
+9. [Security and threat model](security-and-threat-model.md),
    [India privacy/compliance considerations](privacy-compliance-india.md), and
    [risk register](risk-register.md).
-8. [Repository review report](review-report.md) — audit outcome and next
+10. [Repository review report](review-report.md) — audit outcome and next
    actions.
 
 ## Documentation map
@@ -40,8 +45,10 @@ duplicated across unrelated files.
 | [Deployment guide](deployment.md) | Operators, developers | Current local Compose operation and delivery boundary | Current |
 | [Testing](testing.md) | Developers, reviewers | Strategy, commands, results, and coverage roadmap | Current |
 | [Technology inventory](technology-inventory.md) | Maintainers, security reviewers | Direct technologies, versions, purpose, considerations, links | Current snapshot |
+| [Supplementary technology guide](supplementary-technology-guide.md) | Learners, mentors, presenters | Beginner explanations, real code/configuration, runtime timing, and pass/fail rules for project-specific tools | Current; course classification partly owner-provided |
 | [Repository workflow](repository-workflow.md) | Contributors, maintainers | Actual workflow and recommendations | Current snapshot |
 | [Repository history](repository-history.md) | Auditors, mentors | Accessible issues, PRs, branches, and CI summary | Current snapshot |
+| [Agile delivery and Kanban evidence](agile-delivery-evidence.md) | Mentors, contributors, auditors | Private GitHub Project configuration, point-in-time flow evidence, burn-up, ownership, and public issue/PR links | Current snapshot; authorized board access required |
 | [Evidence index](evidence-index.md) | Auditors, reviewers | Evidence identifiers, validity, and next evidence steps | Current snapshot |
 | [Traceability matrix](traceability-matrix.md) | Mentors, owners | Requirements/rubric to evidence mapping | Current snapshot |
 | [Mentor rubric evidence guide](mentor-review-guide.md) | Mentors, contributors | Concise evidence walkthrough and presentation checklist | Current snapshot |
@@ -74,7 +81,7 @@ Documents use these terms consistently:
 
 ## Baseline and maintenance
 
-Unless stated otherwise, snapshot documents describe `main` commit `9379af1`
+Unless stated otherwise, snapshot documents describe `main` commit `13738e3`
 as reviewed on 2026-08-06. Open and draft pull requests are not treated as
 implemented. Maintainers should update the index, requirements, evidence,
 traceability, risks, and review report together after material changes.

@@ -3,7 +3,7 @@
 ## Purpose, scope, and status
 
 This document describes the architecture implemented on reviewed `main` commit
-`9379af1`. It is intended for developers, maintainers, reviewers, and operators.
+`13738e3`. It is intended for developers, maintainers, reviewers, and operators.
 Design rationale not present in history is explicitly recorded as a current
 reconstruction in [architecture decisions](decisions/README.md).
 
@@ -21,7 +21,7 @@ Trusted local browser/API client
       MySQL
 
 Build/delivery boundary:
-GitHub -> GitHub Actions -> Maven/Docker -> attempted GHCR publication
+GitHub -> GitHub Actions -> Maven/system/browser gates -> GHCR publication
 ```
 
 The application is intentionally self-contained; bank/payment, identity, email,
