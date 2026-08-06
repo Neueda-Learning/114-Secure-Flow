@@ -22,10 +22,9 @@ reviewed on 2026-08-06.
 - The automated axe scan found no automatically detectable WCAG A/AA
   violations in the verified page state. This is useful evidence, not a claim
   of complete accessibility conformance.
-- Every application quality and packaging stage completed successfully. The
-  remaining registry-delivery step returned `denied`. Package/repository access
-  is configured; an organization Actions administrator must now allow package
-  write for workflow tokens before publication can be verified.
+- Every application quality, packaging, and registry-delivery stage completed
+  successfully in the latest reviewed `main` run. The GHCR image is private,
+  so Linux needs read-only package authentication or uses the source fallback.
 - GitHub settings verify that `main` requires pull requests, one approval, and
   the existing `test-and-package` check.
 - The current branch is intentionally optimized for local learning. Identity,
@@ -194,23 +193,26 @@ It separates three outcomes:
    verifies health, real persistence, restart persistence, and the non-root
    runtime, then runs Chromium interaction and axe accessibility checks.
 3. `Publish container image` runs only after both quality jobs pass on a push
-   and publishes `:latest` to GHCR.
+   and publishes `:latest` plus an immutable full-SHA tag to GHCR.
 
 The browser dependencies are locked in `package-lock.json`; `npm audit` reported
 zero known vulnerabilities for that small test dependency set during the local
 2026-08-06 verification.
 
-The current workflow provides continuous integration and registry delivery.
-Server restart automation is the next stage; draft PR
-[#46](https://github.com/Neueda-Learning/114-Secure-Flow/pull/46) proposes Linux
-deployment automation and remains clearly separated from the reviewed `main`
-baseline until its environment-specific verification is complete.
+The workflow also marks a source revision as a `deployment-candidate` only after
+both required quality jobs pass. The private Linux server checks for that marker
+every five minutes, downloads the exact tested revision, and first tries its
+immutable GHCR image. If private-package authentication or publication is
+unavailable, it builds the same revision locally. Both paths require healthy
+containers before recording success. See
+[automatic Linux deployment](docs/continuous-deployment.md).
 
 ## Reviewer documentation
 
 Start with the [documentation index](docs/README.md). Key audit documents are:
 
 - [Project overview](docs/project-overview.md)
+- [Automatic Linux deployment](docs/continuous-deployment.md)
 - [Requirements](docs/requirements.md)
 - [Evidence index](docs/evidence-index.md)
 - [Traceability matrix](docs/traceability-matrix.md)

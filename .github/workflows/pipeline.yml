@@ -87,6 +87,16 @@ jobs:
         if: always()
         run: docker compose down --volumes --remove-orphans
 
+  deployment-candidate:
+    name: deployment-candidate
+    if: github.event_name == 'push'
+    needs: [test-and-package, container-system-test]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Mark the tested source revision as deployable
+        run: echo "${{ github.sha }} passed every required test and may be deployed."
+
   deliver-image:
     name: Publish container image
     if: github.event_name == 'push'
@@ -112,4 +122,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/neueda-learning/114-secure-flow:latest
+          tags: |
+            ghcr.io/neueda-learning/114-secure-flow:latest
+            ghcr.io/neueda-learning/114-secure-flow:sha-${{ github.sha }}
