@@ -471,25 +471,18 @@ main {
 }
 
 .chart-bars {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 14px;
-    height: 220px;
+    display: grid;
+    gap: 11px;
     margin: 0;
-    padding: 0 6px;
+    padding: 0;
     list-style: none;
 }
 
 .chart-row {
-    display: flex;
-    flex: 1 1 0;
-    min-width: 0;
-    height: 100%;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) minmax(180px, 3.5fr) auto;
     align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
+    gap: 12px;
 }
 
 .chart-label,
@@ -499,51 +492,49 @@ main {
     font-weight: 680;
 }
 
-.chart-label {
-    order: 2;
-    text-align: center;
-    overflow-wrap: anywhere;
-}
-
 .chart-value {
-    order: 0;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
 
 .chart-track {
-    order: 1;
     position: relative;
-    width: 100%;
-    max-width: 48px;
-    flex: 1 1 auto;
+    height: 12px;
     background: #edf0f2;
     overflow: hidden;
 }
 
 .chart-fill {
     position: absolute;
-    inset: auto 0 0 0;
-    background: linear-gradient(to top, #59636a, #8c959c);
+    inset: 0 auto 0 0;
+    background: linear-gradient(90deg, #2c4b7c, #3f6ea8);
 }
 
-.chart-fill.high {
-    background: linear-gradient(to top, #b3000f, #db0011);
+/* categorical palette for charts without a semantic severity/status meaning */
+.chart-row:nth-child(6n+1) .chart-fill { background: linear-gradient(90deg, #2c4b7c, #3f6ea8); }
+.chart-row:nth-child(6n+2) .chart-fill { background: linear-gradient(90deg, #0f6b63, #1b8f83); }
+.chart-row:nth-child(6n+3) .chart-fill { background: linear-gradient(90deg, #8a5a06, #b9790c); }
+.chart-row:nth-child(6n+4) .chart-fill { background: linear-gradient(90deg, #5b3a7a, #7c4fa0); }
+.chart-row:nth-child(6n+5) .chart-fill { background: linear-gradient(90deg, #1f5c37, #2e7a4a); }
+.chart-row:nth-child(6n+6) .chart-fill { background: linear-gradient(90deg, #7a2f3f, #a1425a); }
+
+.chart-row .chart-fill.high {
+    background: linear-gradient(90deg, #b3000f, #db0011);
 }
 
-.chart-fill.medium {
-    background: linear-gradient(to top, #9e5c00, #c87900);
+.chart-row .chart-fill.medium {
+    background: linear-gradient(90deg, #9e5c00, #c87900);
 }
 
-.chart-fill.open,
-.chart-fill.acknowledged,
-.chart-fill.investigating {
-    background: linear-gradient(to top, #3e4f5c, #5f7484);
+.chart-row .chart-fill.open,
+.chart-row .chart-fill.acknowledged,
+.chart-row .chart-fill.investigating {
+    background: linear-gradient(90deg, #3e4f5c, #5f7484);
 }
 
-.chart-fill.closed,
-.chart-fill.dismissed {
-    background: linear-gradient(to top, #3e6f53, #5ea17a);
+.chart-row .chart-fill.closed,
+.chart-row .chart-fill.dismissed {
+    background: linear-gradient(90deg, #3e6f53, #5ea17a);
 }
 
 .chart-legend {
@@ -1246,17 +1237,17 @@ dialog::backdrop {
         padding-inline: 18px;
     }
 
-    .chart-bars {
-        height: 170px;
-        gap: 8px;
-    }
-
     .chart-row {
-        gap: 4px;
+        grid-template-columns: 1fr;
+        gap: 5px;
     }
 
     .chart-track {
-        max-width: 34px;
+        height: 10px;
+    }
+
+    .chart-value {
+        justify-self: start;
     }
 
     .form-grid,

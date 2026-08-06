@@ -190,11 +190,11 @@ function barChart(rows, emptyMessage) {
     }));
 
     return '<ol class="chart-bars">' + rows.map(function (row) {
-        var barHeight = Math.max(4, Math.round((row.value / maximum) * 100));
+        var barWidth = Math.max(4, Math.round((row.value / maximum) * 100));
         return '<li class="chart-row">'
             + '<span class="chart-label">' + escapeHtml(row.label) + "</span>"
             + '<span class="chart-track"><span class="chart-fill '
-            + escapeHtml(row.className) + '" style="height:' + barHeight
+            + escapeHtml(row.className) + '" style="width:' + barWidth
             + '%"></span></span>'
             + '<span class="chart-value">' + escapeHtml(row.display) + "</span>"
             + "</li>";
