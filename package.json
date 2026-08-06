@@ -1,0 +1,13 @@
+{
+  "name": "secureflow-browser-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Browser interaction and accessibility checks for SecureFlow",
+  "scripts": {
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.12.1",
+    "@playwright/test": "1.62.1"
+  }
+}

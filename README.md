@@ -2,257 +2,230 @@
 
 [![CI and CD](https://github.com/Neueda-Learning/114-Secure-Flow/actions/workflows/pipeline.yml/badge.svg)](https://github.com/Neueda-Learning/114-Secure-Flow/actions/workflows/pipeline.yml)
 
-SecureFlow is a small transaction-monitoring application built with Java 21,
-Spring Boot, MySQL, Flyway, Maven, JaCoCo, Docker, and plain HTML/CSS/JavaScript.
+SecureFlow is a learning and demonstration application for recording INR
+transactions, applying three configurable monitoring rules, and managing the
+resulting alert lifecycle. It is a Java 21 and Spring Boot modular monolith with
+a plain HTML/CSS/JavaScript interface and MySQL persistence.
 
-The code is intentionally direct and readable. A transaction is saved, three
-monitoring checks run immediately, and matching alerts are stored with their
-status history.
+## Current status
 
-## Features
+The documented baseline is `main` at commit
+[`9379af1`](https://github.com/Neueda-Learning/114-Secure-Flow/commit/9379af19e7194a4a5b8e0a22eb4f34e141b1a503),
+reviewed on 2026-08-06.
 
-- Store and search INR transactions by text, transaction ID, or amount.
-- Validate transaction fields in both the browser and backend.
-- Use server time for new transactions and display timestamps in IST.
-- Create a HIGH alert when an amount is above INR 10,000.
-- Create a HIGH alert after more than five transactions in ten minutes.
-- Create a MEDIUM alert when an account uses a payee for the first time.
-- Support OPEN → ACKNOWLEDGED → INVESTIGATING → CLOSED.
-- Support dismissal from ACKNOWLEDGED or INVESTIGATING.
-- Keep the transactions and history linked to each alert.
-- Provide a responsive dashboard, REST API, Swagger UI, and health endpoint.
-- Add fresh presentation data with current timestamps on demand.
-- Persist production data in MySQL.
-- Verify the application with end-to-end tests and a 70% JaCoCo gate.
+- Seven Spring Boot HTTP integration tests are present and passed in the
+  referenced `main` CI run.
+- The 70% JaCoCo line-coverage gate passed in that run.
+- The runnable JAR and Docker image build completed.
+- The review branch also passed a disposable MySQL 8.4 Compose smoke test,
+  named-volume restart check, non-root runtime check, and two Chromium tests.
+- The automated axe scan found no automatically detectable WCAG A/AA
+  violations in the verified page state. This is useful evidence, not a claim
+  of complete accessibility conformance.
+- Every application quality and packaging stage completed successfully. The
+  remaining registry-delivery step returned `denied`. Package/repository access
+  is configured; an organization Actions administrator must now allow package
+  write for workflow tokens before publication can be verified.
+- GitHub settings verify that `main` requires pull requests, one approval, and
+  the existing `test-and-package` check.
+- The current branch is intentionally optimized for local learning. Identity,
+  TLS, managed secrets, backup, security-scanning, and shared-deployment
+  controls are documented as the next maturity stage.
+
+See the [evidence index](docs/evidence-index.md) and
+[improvement roadmap](docs/known-limitations.md) for the verified boundary and
+next evidence steps.
+
+## Implemented capabilities
+
+- Create and search INR transactions with server-side and browser validation.
+- Search by text, transaction ID, amount range, and time range.
+- Page transaction, current-alert, and alert-history results.
+- Create alerts for amounts above INR 10,000, more than five transactions in
+  ten minutes, and first use of a payee by an account.
+- Move alerts through `OPEN`, `ACKNOWLEDGED`, `INVESTIGATING`, and `CLOSED`, or
+  dismiss an acknowledged/investigating alert with resolution notes.
+- Retain linked triggering transactions and alert status history.
+- Display aggregate dashboard data and browser-rendered charts.
+- Add synthetic presentation data with current timestamps.
+- Expose REST endpoints, generated OpenAPI/Swagger UI, and a health endpoint.
+- Run Maven/JUnit/Flyway/JaCoCo, MySQL/Compose, browser, accessibility, and
+  container-delivery checks in GitHub Actions.
+
+The authoritative requirement-to-code-and-test mapping is in
+[requirements](docs/requirements.md) and the
+[traceability matrix](docs/traceability-matrix.md).
 
 ## Quick start with Docker
 
-Requirements:
+Requirements: Docker Engine or Docker Desktop with Docker Compose v2.
 
-- Docker Engine or Docker Desktop
-- Docker Compose
-
-Start the application and MySQL:
-
-~~~bash
-docker compose up --build
-~~~
+```bash
+docker compose config
+docker compose up --build --wait
+```
 
 Open:
 
-- Dashboard: http://localhost:8080
-- Swagger UI: http://localhost:8080/swagger-ui.html
-- Health: http://localhost:8080/actuator/health
+- Dashboard: <http://localhost:8080>
+- Swagger UI: <http://localhost:8080/swagger-ui.html>
+- OpenAPI JSON: <http://localhost:8080/v3/api-docs>
+- Health: <http://localhost:8080/actuator/health>
 
-Stop the containers and keep the database:
+Stop while keeping database data:
 
-~~~bash
+```bash
 docker compose down
-~~~
+```
 
-Delete the containers and all saved database data:
+Delete the containers **and the named MySQL data volume**:
 
-~~~bash
+```bash
 docker compose down --volumes
-~~~
+```
 
-## Demo data for a presentation
+The default credentials in `compose.yaml` and `.env.example` are for local
+learning only. Do not use them for a shared or public environment.
 
-Docker loads the demo data automatically the first time the application starts.
-The sample uses the real transaction service, so it also creates realistic
-high-amount, rapid-transaction, and new-payee alerts with current timestamps.
+## Demo data
 
-If the application is already open, click **Add demo data** in the sidebar.
-You can also run this command from Linux or WSL:
+Docker enables startup seeding. Startup seeding adds one synthetic batch only
+when the transaction table is empty. A manual request always adds another
+batch of 20 transactions using the real application service and current server
+timestamps:
 
-~~~bash
+```bash
 curl -X POST http://localhost:8080/api/demo/seed
-~~~
+```
 
-Each click or command adds a new batch of 20 transactions and 12 alerts with
-new account references and current timestamps. This makes it useful immediately
-before a presentation. Automatic startup seeding only runs when the database is
-empty. Docker enables it with this value in **compose.yaml**:
+The current automated test expects each manual batch to produce 12 alerts.
+That number is implementation-specific and should be updated if monitoring
+rules change.
 
-~~~yaml
-DEMO_SEED_ON_STARTUP: "true"
-~~~
+Set `DEMO_SEED_ON_STARTUP=false` to disable startup seeding. The manual endpoint
+is intentionally convenient for a controlled local demo; add access control
+before expanding it to a shared environment.
 
-Set it to `false` if you want Docker to start with an empty database.
-
-The included passwords are for local learning only. Copy **.env.example** to
-**.env** and change the values before sharing a deployment. Port 8080 is bound
-to 127.0.0.1, so the default Compose setup is accessible only from the same
-computer.
-
-## Run the quality gate locally
-
-Requirements:
-
-- Java 21
-- Internet access on the first build
+## Build and verification
 
 Windows:
 
-~~~powershell
+```powershell
 .\mvnw.cmd clean verify
-~~~
+```
 
 Linux or macOS:
 
-~~~bash
+```bash
 chmod +x mvnw
 ./mvnw clean verify
-~~~
+```
 
-This one command:
-
-1. removes the previous build
-2. compiles the Java source
-3. starts the test application
-4. applies the Flyway migration to the test database
-5. runs seven HTTP-level tests
-6. creates the runnable JAR
-7. creates the JaCoCo HTML report
-8. fails if measured line coverage is below 70%
+This command compiles the application, runs seven integration tests against an
+in-memory H2 database, applies the Flyway migration, creates the JAR, produces
+the JaCoCo report, and enforces the configured 70% line-coverage gate.
 
 Outputs:
 
-- JAR: **target/secureflow-1.0.0.jar**
-- Coverage report: **target/site/jacoco/index.html**
-- Test reports: **target/surefire-reports/**
+- `target/secureflow-1.0.0.jar`
+- `target/surefire-reports/`
+- `target/site/jacoco/index.html`
 
-## Simple request flow
+Coverage shows which measured lines executed; assertions determine whether
+behavior was correct. Read [testing and evidence](docs/testing.md) for the exact
+pass/fail rules, browser command, and verified coverage evidence.
 
-~~~text
-Browser
-  ↓
-Controller receives JSON
-  ↓
-Service validates and saves data
-  ↓
-MonitoringService runs three if statements
-  ↓
-AlertService saves matching alerts
-  ↓
-Repository reads or writes the database
-~~~
+## Request flow
 
-The main packages are:
+```text
+Browser or API client
+        |
+        v
+Spring MVC controller -> service -> repository -> MySQL
+                              |
+                              +-> monitoring checks -> alerts and history
+```
 
-- **transaction** — transaction endpoint, validation, persistence, and search
-- **monitoring** — amount, velocity, and new-payee checks
-- **alert** — alert creation, filtering, detail, and status changes
-- **dashboard** — summary counts and transaction volume
-- **demo** — reusable presentation data and startup loading
-- **common** — paging and consistent API errors
-- **config** — monitoring values loaded from application configuration
+The application packages are `transaction`, `monitoring`, `alert`, `dashboard`,
+`demo`, `common`, and `config`. See [architecture](docs/architecture.md) for
+component, data-flow, time, transaction, and database details.
 
-See [Architecture](docs/architecture.md) for the complete code and data flow.
+## Monitoring defaults
 
-## Monitoring configuration
+`src/main/resources/application.yml` defines:
 
-The defaults are in **src/main/resources/application.yml**:
-
-~~~yaml
+```yaml
 monitoring:
   amount-limit: 10000.00
   currency: INR
   max-transactions: 5
   window-minutes: 10
-~~~
+```
 
-The monitoring code is deliberately easy to follow. Each rule is a normal
-conditional block in **MonitoringService.java**.
+The current new-payee rule has a clear beginner-friendly definition: the first
+account/payee combination in retained data. A configurable cooldown is recorded
+as a future extension if the product requirement expands.
 
-## Main API
+## API summary
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| POST | /api/transactions | Save a transaction and run all rules |
-| GET | /api/transactions | Search and page through transactions |
-| GET | /api/alerts | Filter and page through alerts |
-| GET | /api/alerts/{id} | Read alert details, transactions, and history |
-| PATCH | /api/alerts/{id}/status | Perform a valid status transition |
-| GET | /api/rules | Read the effective monitoring rules |
-| GET | /api/dashboard/summary | Read all-time totals and active-alert count |
-| POST | /api/demo/seed | Load the presentation dataset once |
-| GET | /actuator/health | Check application health |
+| `POST` | `/api/transactions` | Store a transaction and run monitoring |
+| `GET` | `/api/transactions` | Filter and page transactions |
+| `GET` | `/api/alerts` | Filter and page alerts |
+| `GET` | `/api/alerts/{id}` | Read alert details, links, and history |
+| `PATCH` | `/api/alerts/{id}/status` | Apply an allowed status transition |
+| `GET` | `/api/rules` | Read effective monitoring rules |
+| `GET` | `/api/dashboard/summary` | Read all-time aggregate values |
+| `POST` | `/api/demo/seed` | Add one synthetic demonstration batch |
+| `GET` | `/actuator/health` | Read application health |
 
-Ready-to-run examples are in [API examples](docs/api-examples.http).
+See [API reference](docs/api.md) and
+[ready-to-run examples](docs/api-examples.http).
 
-## Database changes with Flyway
+## CI and delivery
 
-Flyway runs SQL files from **src/main/resources/db/migration** in version order.
+`.github/workflows/pipeline.yml` runs for pull requests and pushes to `main`.
+It separates three outcomes:
 
-The current migration is:
+1. `test-and-package` runs the seven Spring tests, Flyway, packaging, and the
+   JaCoCo threshold, then uploads the JAR and report.
+2. `MySQL, Compose and browser checks` starts a disposable MySQL-backed stack,
+   verifies health, real persistence, restart persistence, and the non-root
+   runtime, then runs Chromium interaction and axe accessibility checks.
+3. `Publish container image` runs only after both quality jobs pass on a push
+   and publishes `:latest` to GHCR.
 
-~~~text
-V1__create_tables.sql
-~~~
+The browser dependencies are locked in `package-lock.json`; `npm audit` reported
+zero known vulnerabilities for that small test dependency set during the local
+2026-08-06 verification.
 
-It creates the transaction, alert, link, and history tables. Flyway records the
-completed version in **flyway_schema_history**, so it does not recreate the
-tables on every start.
+The current workflow provides continuous integration and registry delivery.
+Server restart automation is the next stage; draft PR
+[#46](https://github.com/Neueda-Learning/114-Secure-Flow/pull/46) proposes Linux
+deployment automation and remains clearly separated from the reviewed `main`
+baseline until its environment-specific verification is complete.
 
-Never edit an applied production migration. Add the next version instead, for
-example:
+## Reviewer documentation
 
-~~~text
-V2__add_transaction_reference.sql
-~~~
+Start with the [documentation index](docs/README.md). Key audit documents are:
 
-## Tests and JaCoCo
+- [Project overview](docs/project-overview.md)
+- [Requirements](docs/requirements.md)
+- [Evidence index](docs/evidence-index.md)
+- [Traceability matrix](docs/traceability-matrix.md)
+- [Mentor rubric evidence guide](docs/mentor-review-guide.md)
+- [Repository review report](docs/review-report.md)
+- [Security and threat model](docs/security-and-threat-model.md)
+- [India privacy and compliance considerations](docs/privacy-compliance-india.md)
+- [Risk register](docs/risk-register.md)
+- [AI-assistance record](docs/ai-usage.md)
 
-All end-to-end scenarios are kept in one readable test class:
+## Intended use and responsibility
 
-~~~text
-src/test/java/com/neueda/secureflow/SecureFlowTest.java
-~~~
-
-The tests use MockMvc like a browser and H2 like a temporary database. They test
-the real controllers, services, repositories, Flyway migration, rules, errors,
-dashboard, and static page without requiring a local MySQL installation.
-
-JaCoCo watches which Java lines run during the tests. Maven fails during
-**verify** when measured line coverage is lower than 70%.
-
-See [Testing guide](docs/testing.md) for pass/failure rules and CI behavior.
-
-## CI/CD
-
-The workflow is **.github/workflows/pipeline.yml**.
-
-For every pull request and push to main it:
-
-1. installs Java 21
-2. runs the Maven quality gate
-3. uploads the JAR and JaCoCo report
-4. builds the Docker image
-5. publishes the image only after a successful push to main
-
-Published image:
-
-~~~text
-ghcr.io/neueda-learning/114-secure-flow:latest
-~~~
-
-The workflow provides continuous delivery to GitHub Container Registry. It does
-not automatically expose or restart a public server.
-
-## Documentation
-
-- [Architecture](docs/architecture.md)
-- [Testing and coverage](docs/testing.md)
-- [Docker deployment](docs/deployment.md)
-- [API examples](docs/api-examples.http)
-- [Manual stress/load testing](load-tests/README.md)
-- [Contributing](CONTRIBUTING.md)
-- [Security](SECURITY.md)
-
-## Security boundary
-
-SecureFlow currently has no login system or TLS termination. The supplied
-Compose configuration is intentionally local-only. Do not expose port 8080 to
-the public internet without authentication, HTTPS, secret management, backups,
-and network controls.
+SecureFlow is purpose-built educational software with transparent deterministic
+rules and reproducible engineering evidence. Expanding it into a financial,
+investigative, compliance, or shared-production context requires the additional
+domain, legal, security, and operational validation described in the roadmap.
+Project owners and reviewers retain final responsibility for that validation
+and for all AI-assisted output.

@@ -1,24 +1,62 @@
-## What changed?
+## Summary
 
-Describe the behavior in a few clear sentences.
+Describe the outcome in clear, factual language.
 
-## Why?
+## Motivation and related work
 
-Explain the problem or requirement.
+- Related issue:
+- Related decision/document:
 
-## Verification
+## Scope
 
-- [ ] I ran ./mvnw clean verify (or .\mvnw.cmd clean verify on Windows).
-- [ ] All tests passed.
-- [ ] JaCoCo coverage remained at or above 70%.
-- [ ] I checked the affected browser flow when the UI changed.
-- [ ] I validated Docker configuration when Docker files changed.
-- [ ] I updated documentation when behavior or setup changed.
-- [ ] I did not commit secrets, .env, target, or database files.
+### Included
 
-## Impact
+-
 
-- API changes:
-- Database migration:
-- Deployment changes:
+### Excluded
+
+-
+
+## Affected components
+
+- Files/packages:
+- API impact: None / describe
+- Database migration: None / describe
+- Configuration or deployment impact: None / describe
+- Security/privacy/data impact: None / describe
+
+## Verification performed
+
+Record exact commands, environments, dates only when naturally available, and
+results. Write `Not run` rather than checking an item that was not performed.
+
+- [ ] `./mvnw clean verify`
+- [ ] Relevant manual browser flow
+- [ ] Docker Compose validation/health check when applicable
+- [ ] Documentation link and consistency check
+- Result/evidence URL or path:
+
+## Risks and limitations
+
+- Known risks:
+- Known limitations:
 - Follow-up work:
+
+## Rollback or recovery
+
+Explain how to recover. For a migration or data change, address data safety
+explicitly.
+
+## Reviewer guidance
+
+Identify the files, claims, boundary cases, or evidence that deserve focused
+review.
+
+## Integrity checklist
+
+- [ ] Claims match the actual diff and current repository state.
+- [ ] Test, review, benchmark, and deployment results are not fabricated.
+- [ ] Current behavior is separated from planned or unverified work.
+- [ ] No secrets, `.env`, personal data, logs with sensitive values, build
+      output, or database files are included.
+- [ ] Documentation and traceability were updated when required.

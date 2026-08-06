@@ -200,7 +200,7 @@ h3 {
 
 .nav-label {
     margin: 11px 12px 7px;
-    color: #919191;
+    color: #a0a0a0;
     font-size: 0.65rem;
     font-weight: 780;
     letter-spacing: 0.13em;
@@ -378,7 +378,7 @@ main {
 }
 
 .summary-card small {
-    color: #8a9297;
+    color: #60696f;
     font-size: 0.66rem;
 }
 
@@ -794,7 +794,7 @@ tr:last-child td {
 }
 
 th {
-    color: #71787d;
+    color: #5e666b;
     background: #f8f9f9;
     font-size: 0.65rem;
     font-weight: 780;
@@ -862,7 +862,7 @@ tbody tr:hover {
 }
 
 .no-alert {
-    color: #92999d;
+    color: #60696f;
     font-size: 0.7rem;
 }
 

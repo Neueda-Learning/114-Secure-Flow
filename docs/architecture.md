@@ -1,141 +1,223 @@
 # Architecture
 
-SecureFlow is a single Spring Boot application with a static browser dashboard
-and a MySQL database.
+## Purpose, scope, and status
+
+This document describes the architecture implemented on reviewed `main` commit
+`9379af1`. It is intended for developers, maintainers, reviewers, and operators.
+Design rationale not present in history is explicitly recorded as a current
+reconstruction in [architecture decisions](decisions/README.md).
+
+## System context
+
+```text
+Trusted local browser/API client
+              |
+              | HTTP/JSON (trusted local boundary; TLS/identity next for shared use)
+              v
+     Spring Boot application
+       |                 |
+       | JPA/JDBC        +-- static HTML/CSS/JavaScript
+       v
+      MySQL
+
+Build/delivery boundary:
+GitHub -> GitHub Actions -> Maven/Docker -> attempted GHCR publication
+```
+
+The application is intentionally self-contained; bank/payment, identity, email,
+analytics, and AI integrations are reserved for approved future scope.
 
 ## Runtime components
 
-~~~text
-Browser
-  │ HTTP and JSON
-  ▼
-Spring Boot application
-  ├── transaction endpoints
-  ├── monitoring checks
-  ├── alert endpoints
-  ├── dashboard summary
-  └── static HTML/CSS/JavaScript
-  │ JPA
-  ▼
-MySQL
-~~~
+| Component | Responsibility | Implementation |
+|---|---|---|
+| Browser UI | Entry, filters, pagination, alert review, charts, demo action | [`static/`](../src/main/resources/static/) |
+| Transaction component | Validate, normalize, timestamp, save, and search transactions | [`transaction/`](../src/main/java/com/neueda/secureflow/transaction/) |
+| Monitoring component | Apply amount, velocity, and new-payee checks | [`monitoring/`](../src/main/java/com/neueda/secureflow/monitoring/) |
+| Alert component | Create alerts, link transactions, filter, return detail, enforce transitions | [`alert/`](../src/main/java/com/neueda/secureflow/alert/) |
+| Dashboard component | Calculate all-time aggregate counts and volume | [`dashboard/`](../src/main/java/com/neueda/secureflow/dashboard/) |
+| Demo component | Generate synthetic batches through the real transaction service | [`demo/`](../src/main/java/com/neueda/secureflow/demo/) |
+| Common/config | Page/error models and typed monitoring values | [`common/`](../src/main/java/com/neueda/secureflow/common/), [`config/`](../src/main/java/com/neueda/secureflow/config/) |
+| MySQL | Runtime persistence | [`compose.yaml`](../compose.yaml) |
+| Flyway | Versioned schema creation/validation | [`db/migration/`](../src/main/resources/db/migration/) |
 
-Docker Compose starts MySQL first. After the database health check succeeds, it
-starts the application.
+All components run in one process and one deployable JAR. Package boundaries
+are organizational conventions, not independently deployed services.
 
-## Create-transaction flow
+## Transaction creation and monitoring data flow
 
-~~~text
+```text
 POST /api/transactions
-  ↓
-TransactionController validates JSON shape
-  ↓
-TransactionService trims IDs and confirms INR
-  ↓
-TransactionRepository checks whether the payee is new
-  ↓
-TransactionRepository saves the transaction with server time
-  ↓
-MonitoringService runs amount, velocity, and new-payee checks
-  ↓
-AlertService saves every matching alert and initial history entry
-  ↓
-API returns the saved transaction and generated alerts
-~~~
+        |
+        v
+TransactionController: Bean Validation
+        |
+        v
+TransactionService: trim identifiers, uppercase/validate INR, validate range
+        |
+        +--> repository checks whether account/payee existed before save
+        |
+        v
+save transaction with Instant.now()
+        |
+        v
+MonitoringService
+   | amount > limit? ---------> create HIGH alert
+   | count in window > max? --> create HIGH alert linked to window rows
+   | first account/payee? ----> create MEDIUM alert
+        |
+        v
+return transaction plus alerts
+```
 
-The transaction and generated alerts are created in one Spring transaction. If
-a database operation fails, the whole operation rolls back.
+[`TransactionService.create`](../src/main/java/com/neueda/secureflow/transaction/TransactionService.java)
+has a Spring transaction boundary. The saved transaction and generated alerts
+participate in that database transaction; an unhandled persistence failure
+should roll it back. This does not provide distributed transaction behavior.
 
-## Monitoring rules
+## Monitoring semantics
 
-All three rules are in **MonitoringService**.
+### High amount
 
-### Amount
-
-~~~java
-if (transaction.getAmount().compareTo(rules.amountLimit()) > 0) {
-    // create HIGH amount alert
-}
-~~~
-
-The boundary is strictly greater than the configured limit.
+The check is strictly greater than `monitoring.amount-limit`; equality does not
+match. Defaults are INR 10,000 and severity HIGH.
 
 ### Velocity
 
-The repository loads transactions for the same account between:
+The service calculates:
 
-~~~text
-transaction time - configured window
-and
-transaction time
-~~~
+```text
+window start = transaction time - configured minutes
+window end   = transaction time + 1 second
+```
 
-An alert is created when the number of transactions is greater than the
-configured maximum.
+It queries the same account between those values and creates a HIGH alert when
+the returned count is greater than five. The one-second extension includes the
+just-saved transaction despite timestamp/database precision differences. That
+implementation choice is source-inspected but not documented by a dedicated
+boundary test.
 
 ### New payee
 
-Before saving a transaction, the repository checks whether the account has ever
-used that payee. No previous match means the new-payee rule creates a MEDIUM
-alert.
+Before the save, the repository checks whether any retained transaction already
+uses the normalized account/payee pair. On first use, a MEDIUM alert is created.
+The current baseline uses a simple first-ever definition; a time-based cooldown
+is a documented extension, and deletion/reset naturally starts a fresh dataset.
 
-## Alert status flow
+## Alert lifecycle
 
-~~~text
-OPEN
-  ↓
-ACKNOWLEDGED
-  ├──→ DISMISSED
-  ↓
-INVESTIGATING
-  ├──→ DISMISSED
-  ↓
-CLOSED
-~~~
+```text
+OPEN -> ACKNOWLEDGED -> INVESTIGATING -> CLOSED
+            |                |
+            +-> DISMISSED <---+
+```
 
-CLOSED and DISMISSED are final. Closing or dismissing requires resolution notes
-of at least three characters.
+- `CLOSED` and `DISMISSED` are terminal.
+- Dismissal and closure require trimmed notes of at least three characters.
+- Every alert begins with an initial history row.
+- Each accepted transition adds a history row and applicable timestamp.
+- Status timestamps/history are already recorded; authenticated actor identity
+  is the planned shared-environment audit enhancement.
 
-Every change creates an **alert_status_history** row.
+## Database design
 
-## Database tables
+| Table | Purpose | Important relationships/indexes |
+|---|---|---|
+| `transactions` | Normalized payment details and server timestamps | Account/time and account/payee indexes |
+| `alerts` | Rule result and current lifecycle fields | Status index |
+| `alert_transactions` | Many-to-many alert/transaction links | Composite primary key and foreign keys |
+| `alert_status_history` | Append-on-transition history | Foreign key to alert; actor column is a future identity extension |
+| `flyway_schema_history` | Flyway migration ledger | Managed internally by Flyway |
 
-| Table | Purpose |
-|---|---|
-| transactions | Stored INR payments |
-| alerts | Rule matches and current investigation status |
-| alert_transactions | Links an alert to one or more transactions |
-| alert_status_history | Audit trail for alert status changes |
-| flyway_schema_history | Flyway's record of applied migrations |
+The schema source is
+[`V1__create_tables.sql`](../src/main/resources/db/migration/V1__create_tables.sql).
+Runtime uses MySQL 8.4. Fast Maven tests use H2 in MySQL mode and apply the same
+migration. The separate Compose system job starts real MySQL 8.4, verifies a
+live API/database round-trip, and confirms named-volume continuity. Hibernate
+uses `ddl-auto: validate`, so entity mappings are checked rather than used to
+mutate the schema.
 
-The schema is created by **V1__create_tables.sql**. Production uses MySQL. Tests
-use H2 in MySQL compatibility mode and run the same Flyway migration.
+### Data classification
 
-## Package responsibilities
-
-| Package | Responsibility |
-|---|---|
-| transaction | Transaction API, persistence, search, and DTOs |
-| monitoring | Three checks and rule-definition endpoint |
-| alert | Alert persistence, lifecycle, detail, and DTOs |
-| dashboard | All-time totals and active-alert count |
-| common | API error format and page response |
-| config | Typed monitoring configuration |
+Demo identifiers are synthetic, establishing a clear learning-data boundary.
+If real-data scope is ever approved, account/payee identifiers, descriptions,
+amounts, timestamps, notes, and behavioral links can be supported by formal
+classification, retention, deletion, masking, encryption, and rights workflows.
 
 ## Time handling
 
-Transactions use **Instant.now()**, which represents an unambiguous UTC instant.
-The database and JSON handling use UTC. The browser formats timestamps in
-Asia/Kolkata.
+- Backend timestamps use `Instant`/UTC.
+- Hibernate JDBC and Jackson are configured for UTC.
+- The browser formats displayed times for `Asia/Kolkata`.
+- Dashboard summaries are all-time; they do not filter to a local “today.”
+- Demo data uses the current server time when each transaction is created.
 
-Dashboard totals cover all saved transactions and alerts. Active alerts count
-only OPEN, ACKNOWLEDGED, and INVESTIGATING records.
+## Browser architecture
 
-## Deliberate simplifications
+The browser loads one static page and calls REST endpoints using `fetch`.
+Charts are intentionally constructed from loaded transaction/alert pages in
+JavaScript, keeping the implementation approachable. If owners require
+full-dataset analytics, a server aggregate endpoint is the natural extension.
 
-The application avoids separate mapper classes, rule strategy classes, criteria
-specification classes, and mock-heavy unit tests.
+The UI uses semantic labels, a skip link, ARIA attributes, focusable table
+regions, and keyboard handling for chart tabs. Playwright automates the primary
+transaction/chart journey, and axe checks automatically detectable WCAG A/AA
+issues in Chromium. Manual assistive-technology and specialist review remain a
+separate assurance layer.
 
-Response records contain their own small conversion methods. Repository queries
-handle filtering. Monitoring logic stays in one service so a learner can follow
-the complete decision path.
+## Container and startup flow
+
+```text
+docker compose up --build --wait
+  -> create network and named mysql-data volume
+  -> start MySQL and wait for mysqladmin health check
+  -> build application in Maven image (tests skipped inside Docker build)
+  -> copy JAR into Java 21 Alpine runtime image
+  -> run as non-root secureflow user
+  -> Flyway migrates, Hibernate validates, optional startup seed runs
+  -> application health check queries /actuator/health
+```
+
+The Docker build stays efficient by relying on CI/local `mvnw clean verify` as
+the preceding quality gate. Together, the Maven result and Docker build provide
+distinct, traceable evidence.
+
+## Trust boundaries
+
+1. Browser/client to unauthenticated HTTP application.
+2. Application to database using environment-provided credentials.
+3. Host/container boundary and named-volume persistence.
+4. Developer/GitHub to hosted runner, Maven Central, base-image registries, and
+   GHCR.
+5. Future Linux deployment boundary in draft PR #46 (not current).
+
+Security implications are analyzed in
+[security and threat model](security-and-threat-model.md).
+
+## Deliberate simplifications and consequences
+
+- One deployable improves learnability but couples scaling/release.
+- Direct rule conditionals are readable but can become hard to extend.
+- One integration-test class is easy to follow but provides limited test
+  categorization/isolation.
+- H2 remains intentionally fast; the Compose job provides broader MySQL parity,
+  while targeted database edge cases can be added as SQL complexity grows.
+- The static frontend stays dependency-free at runtime; browser-only dev
+  dependencies are locked and used solely for Playwright/axe verification.
+- Startup migrations simplify local setup but couple database privileges to
+  application startup.
+
+## Related evidence and decisions
+
+- [Requirements](requirements.md)
+- [API reference](api.md)
+- [Testing](testing.md)
+- [ADR-001](decisions/ADR-001-modular-monolith-and-static-ui.md)
+- [ADR-002](decisions/ADR-002-flyway-and-hibernate-validation.md)
+- [ADR-003](decisions/ADR-003-integration-tests-with-h2.md)
+- [Evidence index](evidence-index.md)
+
+## Maintenance
+
+Update this document with any component, schema, trust-boundary, data-flow,
+time, or deployment change. Add/supersede an ADR for material design changes.
