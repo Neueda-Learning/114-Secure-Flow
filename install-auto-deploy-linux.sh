@@ -63,7 +63,7 @@ if [[ ! -f "$env_file" ]]; then
   {
     printf 'DB_PASSWORD=%s\n' "$(random_hex)"
     printf 'DB_ROOT_PASSWORD=%s\n' "$(random_hex)"
-    printf 'APP_PORT=8080\n'
+    printf 'APP_PORT=8081\n'
     printf 'DEMO_SEED_ON_STARTUP=false\n'
   } > "$env_file"
   echo "Created private random database credentials at $env_file."

@@ -120,7 +120,7 @@ tar --extract --gzip --file "$archive" --directory "$release_dir" --strip-compon
 ln -s "$base_dir/shared/.env" "$release_dir/.env"
 
 app_port="$(sed -n 's/^APP_PORT=//p' "$base_dir/shared/.env" | tail -n 1 | tr -d '\r')"
-app_port="${app_port:-8080}"
+app_port="${app_port:-8081}"
 [[ "$app_port" =~ ^[0-9]+$ ]] && (( 10#$app_port >= 1 && 10#$app_port <= 65535 )) \
   || die "APP_PORT in the private .env must be between 1 and 65535."
 

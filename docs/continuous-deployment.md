@@ -94,7 +94,7 @@ sudo systemctl status secureflow-auto-deploy.timer --no-pager
 sudo journalctl -u secureflow-auto-deploy.service -n 100 --no-pager
 cd /opt/secureflow/current
 docker compose ps
-curl --fail http://127.0.0.1:8080/actuator/health
+curl --fail http://127.0.0.1:8081/actuator/health
 ```
 
 The response should contain `"status":"UP"`, and both application and database
@@ -106,10 +106,10 @@ The application remains bound to Linux localhost. From PowerShell on the
 provided Windows VM, keep this SSH tunnel running:
 
 ```powershell
-ssh -L 8080:127.0.0.1:8080 ec2-user@10.9.77.9
+ssh -L 8081:127.0.0.1:8081 ec2-user@10.9.77.9
 ```
 
-Then open <http://localhost:8080> in the Windows browser.
+Then open <http://localhost:8081> in the Windows browser.
 
 ## Operations and recovery
 
