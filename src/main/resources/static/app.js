@@ -69,11 +69,9 @@ function showMessage(text, isError) {
     box.className = isError ? "message show error" : "message show";
 
     clearTimeout(messageTimer);
-    if (!isError) {
-        messageTimer = setTimeout(function () {
-            box.className = "message";
-        }, 4000);
-    }
+    messageTimer = setTimeout(function () {
+        box.className = "message";
+    }, isError ? 6000 : 4000);
 }
 
 function validateAmountRange() {
