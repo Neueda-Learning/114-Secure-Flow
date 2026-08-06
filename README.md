@@ -246,6 +246,7 @@ not automatically expose or restart a public server.
 - [Testing and coverage](docs/testing.md)
 - [Docker deployment](docs/deployment.md)
 - [API examples](docs/api-examples.http)
+- [Manual stress/load testing](load-tests/README.md)
 - [Contributing](CONTRIBUTING.md)
 - [Security](SECURITY.md)
 
