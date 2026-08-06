@@ -1,6 +1,9 @@
 var transactionForm = document.getElementById("transaction-form");
 var searchForm = document.getElementById("search-form");
 var alertDialog = document.getElementById("alert-dialog");
+var resolutionForm = document.getElementById("resolution-form");
+var resolutionNotes = document.getElementById("resolution-notes");
+var pendingResolution = null;
 var demoButton = document.getElementById("load-demo");
 var demoLabel = document.getElementById("demo-label");
 var minimumAmount = document.getElementById("minAmount");
@@ -550,8 +553,10 @@ async function showAlert(id) {
         if (!alertDialog.open) {
             alertDialog.showModal();
         }
+        return true;
     } catch (error) {
         showMessage(error.message, true);
+        return false;
     }
 }
 
@@ -578,16 +583,59 @@ function alertStageActions(alert) {
         + buttons + "</div></section>";
 }
 
-async function updateAlert(id, status) {
-    var notes = null;
+function requiresResolution(status) {
+    return status === "CLOSED" || status === "DISMISSED";
+}
 
-    if (status === "CLOSED" || status === "DISMISSED") {
-        notes = window.prompt("Provide resolution notes:");
-        if (notes === null) {
-            return;
-        }
+function resetResolutionForm() {
+    pendingResolution = null;
+    resolutionForm.reset();
+    resolutionForm.hidden = true;
+    resolutionForm.removeAttribute("aria-busy");
+    document.getElementById("confirm-resolution").disabled = false;
+    document.getElementById("cancel-resolution").disabled = false;
+    document.getElementById("resolution-count").textContent = "0 / 500";
+    document.getElementById("resolution-error").hidden = true;
+    resolutionNotes.removeAttribute("aria-invalid");
+}
+
+function openResolutionForm(id, status) {
+    var isClosing = status === "CLOSED";
+
+    pendingResolution = {id: id, status: status};
+    resolutionForm.reset();
+    document.getElementById("resolution-title").textContent = isClosing
+        ? "Close this alert"
+        : "Dismiss this alert";
+    document.getElementById("resolution-description").textContent = isClosing
+        ? "Confirm the investigation is complete and record the outcome."
+        : "Confirm this alert does not need further investigation and explain why.";
+    document.getElementById("confirm-resolution").textContent = isClosing
+        ? "Close alert"
+        : "Dismiss alert";
+    resolutionForm.dataset.status = status.toLowerCase();
+    resolutionForm.hidden = false;
+    document.getElementById("resolution-count").textContent = "0 / 500";
+    resolutionForm.scrollIntoView({behavior: "smooth", block: "nearest"});
+    resolutionNotes.focus({preventScroll: true});
+}
+
+async function requestAlertUpdate(id, status) {
+    if (!requiresResolution(status)) {
+        return updateAlert(id, status, null);
     }
 
+    if (!alertDialog.open) {
+        var shown = await showAlert(id);
+        if (!shown) {
+            return false;
+        }
+    }
+    openResolutionForm(id, status);
+    return false;
+}
+
+async function updateAlert(id, status, notes) {
     try {
         await api("/api/alerts/" + id + "/status", {
             method: "PATCH",
@@ -704,17 +752,20 @@ document.getElementById("transactions").addEventListener("click", function (even
 });
 
 document.querySelectorAll("#current-alerts, #alert-history").forEach(function (table) {
-    table.addEventListener("click", function (event) {
+    table.addEventListener("click", async function (event) {
         if (event.target.dataset.details) {
             showAlert(event.target.dataset.details);
         }
         if (event.target.dataset.status) {
-            updateAlert(event.target.dataset.id, event.target.dataset.status);
+            event.target.disabled = true;
+            await requestAlertUpdate(event.target.dataset.id, event.target.dataset.status);
+            event.target.disabled = false;
         }
     });
 });
 
 document.getElementById("close-dialog").addEventListener("click", function () {
+    resetResolutionForm();
     alertDialog.close();
 });
 
@@ -725,12 +776,72 @@ alertDialog.addEventListener("click", async function (event) {
     }
 
     button.disabled = true;
-    var updated = await updateAlert(button.dataset.id, button.dataset.status);
+    var updated = await requestAlertUpdate(button.dataset.id, button.dataset.status);
     if (updated) {
         await showAlert(button.dataset.id);
-    } else {
-        button.disabled = false;
     }
+    button.disabled = false;
+});
+
+alertDialog.addEventListener("cancel", resetResolutionForm);
+
+resolutionNotes.addEventListener("input", function () {
+    document.getElementById("resolution-count").textContent =
+        resolutionNotes.value.length + " / 500";
+    if (resolutionNotes.value.trim().length >= 3) {
+        document.getElementById("resolution-error").hidden = true;
+        resolutionNotes.removeAttribute("aria-invalid");
+    }
+});
+
+document.getElementById("cancel-resolution").addEventListener("click", function () {
+    var previousStatus = pendingResolution && pendingResolution.status;
+    resetResolutionForm();
+    var previousAction = previousStatus
+        ? alertDialog.querySelector('[data-status="' + previousStatus + '"]')
+        : null;
+    (previousAction || document.getElementById("close-dialog")).focus();
+});
+
+resolutionForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    if (!pendingResolution) {
+        return;
+    }
+
+    var notes = resolutionNotes.value.trim();
+    if (notes.length < 3) {
+        document.getElementById("resolution-error").hidden = false;
+        resolutionNotes.setAttribute("aria-invalid", "true");
+        resolutionNotes.focus();
+        return;
+    }
+
+    var action = pendingResolution;
+    var confirmButton = document.getElementById("confirm-resolution");
+    var cancelButton = document.getElementById("cancel-resolution");
+    resolutionForm.setAttribute("aria-busy", "true");
+    confirmButton.disabled = true;
+    cancelButton.disabled = true;
+    confirmButton.textContent = action.status === "CLOSED"
+        ? "Closing alert..."
+        : "Dismissing alert...";
+
+    var updated = await updateAlert(
+            action.id, action.status, notes);
+    if (updated) {
+        resetResolutionForm();
+        await showAlert(action.id);
+        return;
+    }
+
+    resolutionForm.removeAttribute("aria-busy");
+    confirmButton.disabled = false;
+    cancelButton.disabled = false;
+    confirmButton.textContent = action.status === "CLOSED"
+        ? "Close alert"
+        : "Dismiss alert";
+    resolutionNotes.focus();
 });
 
 demoButton.addEventListener("click", async function () {
