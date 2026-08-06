@@ -350,6 +350,40 @@
                 aria-label="Close alert details">×</button>
     </div>
     <div id="alert-details"></div>
+    <form id="resolution-form" class="resolution-form" hidden novalidate>
+        <div class="resolution-callout">
+            <span class="resolution-icon" aria-hidden="true">!</span>
+            <div>
+                <p class="eyebrow">FINAL STATUS</p>
+                <h3 id="resolution-title">Resolve alert</h3>
+                <p id="resolution-description"></p>
+            </div>
+        </div>
+
+        <label for="resolution-notes">
+            <span>Resolution notes</span>
+            <textarea id="resolution-notes" name="resolutionNotes"
+                      minlength="3" maxlength="500" rows="5"
+                      placeholder="Summarise your review and the reason for this decision"
+                      aria-describedby="resolution-guidance resolution-count"
+                      required></textarea>
+        </label>
+        <p id="resolution-error" class="resolution-error" role="alert" hidden>
+            Enter at least 3 characters before confirming.
+        </p>
+        <div class="resolution-meta">
+            <span id="resolution-guidance">Required · minimum 3 characters</span>
+            <span id="resolution-count">0 / 500</span>
+        </div>
+
+        <div class="resolution-footer">
+            <p>This decision and your notes will be added to the alert audit history.</p>
+            <div class="resolution-buttons">
+                <button id="cancel-resolution" class="secondary" type="button">Cancel</button>
+                <button id="confirm-resolution" class="primary" type="submit">Confirm</button>
+            </div>
+        </div>
+    </form>
 </dialog>
 
 <script src="/app.js"></script>
