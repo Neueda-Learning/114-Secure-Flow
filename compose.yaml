@@ -18,6 +18,7 @@ services:
       retries: 20
 
   app:
+    image: ${APP_IMAGE:-secureflow:local}
     build: .
     restart: unless-stopped
     depends_on:
@@ -27,7 +28,7 @@ services:
       DB_URL: jdbc:mysql://database:3306/secureflow?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       DB_USERNAME: secureflow
       DB_PASSWORD: ${DB_PASSWORD:-secureflow123}
-      DEMO_SEED_ON_STARTUP: "true"
+      DEMO_SEED_ON_STARTUP: ${DEMO_SEED_ON_STARTUP:-true}
     ports:
       - "127.0.0.1:${APP_PORT:-8080}:8080"
 

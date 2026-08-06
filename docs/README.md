@@ -38,6 +38,7 @@ duplicated across unrelated files.
 | [API reference](api.md) | API users, testers | Endpoint behavior and error model | Current |
 | [Development guide](development.md) | Developers | Local setup, configuration, build, debugging | Current |
 | [Deployment guide](deployment.md) | Operators, developers | Current local Compose operation and delivery boundary | Current |
+| [Automatic Linux deployment](continuous-deployment.md) | Operators, developers | Tested-revision selection, installation, verification, and recovery | Implemented; server installation pending |
 | [Testing](testing.md) | Developers, reviewers | Strategy, commands, results, and coverage roadmap | Current |
 | [Technology inventory](technology-inventory.md) | Maintainers, security reviewers | Direct technologies, versions, purpose, considerations, links | Current snapshot |
 | [Repository workflow](repository-workflow.md) | Contributors, maintainers | Actual workflow and recommendations | Current snapshot |

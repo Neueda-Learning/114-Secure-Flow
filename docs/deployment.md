@@ -2,13 +2,9 @@
 
 ## Purpose, audience, and current boundary
 
-This guide covers the Docker Compose deployment implemented on `main`. It gives
-developers and controlled-lab operators a reproducible local foundation, with
-shared-environment readiness steps documented separately.
-
-Draft PR [#46](https://github.com/Neueda-Learning/114-Secure-Flow/pull/46)
-proposes Linux continuous deployment. It remains clearly separated from this
-implemented flow until merge and supervised environment evidence are complete.
+This guide covers direct Docker Compose operation. The private Amazon Linux
+server's pull-based systemd deployment is documented separately in
+[automatic Linux deployment](continuous-deployment.md).
 
 ## Requirements
 
@@ -176,24 +172,16 @@ The workflow intends to publish:
 
 ```text
 ghcr.io/neueda-learning/114-secure-flow:latest
+ghcr.io/neueda-learning/114-secure-flow:sha-<40-character-commit-SHA>
 ```
 
-The reviewed latest `main` run successfully built the image; the registry step
-then returned `denied`. The workflow grants `packages: write` only to the
-publication job and signs in with `GITHUB_TOKEN`. GitHub settings inspection on
-2026-08-06 verified that the package is linked to this repository, inherits its
-access, and lists `114-Secure-Flow` with **Admin** under **Manage Actions
-access**. Repository Actions settings also showed a locked organization-level
-default of read-only contents/packages. That policy is the leading explanation
-for the denied token, but publication must be rerun to prove the cause and fix.
-
-An organization/enterprise Actions administrator must allow this repository's
-workflow token to publish packages, or approve a separately governed delivery
-credential. Do not add a personal token without owner-approved storage,
-rotation, and least privilege. Then rerun delivery and verify the package
-timestamp/digest. See GitHub's
+The reviewed `main` run on 2026-08-06 successfully published `:latest`. The
+package is currently private: an anonymous manifest request returns HTTP 401.
+The workflow grants `packages: write` only to the publication job and signs in
+with `GITHUB_TOKEN`. The Linux deployment prefers the immutable SHA tag when
+the deployment user has `read:packages` access, then falls back to building the
+same tested source SHA if the pull is unavailable. See GitHub's
 [package-permissions guidance](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages).
-Adding an immutable SHA tag is the recommended release-traceability enhancement.
 
 The image contains only the application and still needs MySQL plus `DB_URL`,
 `DB_USERNAME`, and `DB_PASSWORD`.
