@@ -517,25 +517,33 @@ main {
 .chart-fill {
     position: absolute;
     inset: 0 auto 0 0;
-    background: linear-gradient(90deg, #59636a, #8c959c);
+    background: linear-gradient(90deg, #a3000d, #db0011);
 }
 
-.chart-fill.high {
+/* categorical palette for charts without a semantic severity/status meaning */
+.chart-fill.cat-1 { background: linear-gradient(90deg, #a3000d, #db0011); }
+.chart-fill.cat-2 { background: linear-gradient(90deg, #2b2f33, #454b52); }
+.chart-fill.cat-3 { background: linear-gradient(90deg, #1f3a5f, #2f567f); }
+.chart-fill.cat-4 { background: linear-gradient(90deg, #6b7680, #8fa0ab); }
+.chart-fill.cat-5 { background: linear-gradient(90deg, #8a6d1f, #b08d2e); }
+.chart-fill.cat-6 { background: linear-gradient(90deg, #2f5d4c, #417a63); }
+
+.chart-row .chart-fill.high {
     background: linear-gradient(90deg, #b3000f, #db0011);
 }
 
-.chart-fill.medium {
+.chart-row .chart-fill.medium {
     background: linear-gradient(90deg, #9e5c00, #c87900);
 }
 
-.chart-fill.open,
-.chart-fill.acknowledged,
-.chart-fill.investigating {
+.chart-row .chart-fill.open,
+.chart-row .chart-fill.acknowledged,
+.chart-row .chart-fill.investigating {
     background: linear-gradient(90deg, #3e4f5c, #5f7484);
 }
 
-.chart-fill.closed,
-.chart-fill.dismissed {
+.chart-row .chart-fill.closed,
+.chart-row .chart-fill.dismissed {
     background: linear-gradient(90deg, #3e6f53, #5ea17a);
 }
 
@@ -583,6 +591,13 @@ main {
 .legend-dot.dismissed {
     background: #5ea17a;
 }
+
+.legend-dot.cat-1 { background: #db0011; }
+.legend-dot.cat-2 { background: #454b52; }
+.legend-dot.cat-3 { background: #2f567f; }
+.legend-dot.cat-4 { background: #8fa0ab; }
+.legend-dot.cat-5 { background: #b08d2e; }
+.legend-dot.cat-6 { background: #417a63; }
 
 .panel-tag {
     padding: 6px 9px;
