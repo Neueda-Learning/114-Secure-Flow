@@ -1,180 +1,251 @@
-# Docker deployment
+# Deployment and operations guide
 
-The supplied deployment is intentionally local and beginner-friendly.
+## Purpose, audience, and current boundary
+
+This guide covers the Docker Compose deployment implemented on `main`. It gives
+developers and controlled-lab operators a reproducible local foundation, with
+shared-environment readiness steps documented separately.
+
+Draft PR [#46](https://github.com/Neueda-Learning/114-Secure-Flow/pull/46)
+proposes Linux continuous deployment. It remains clearly separated from this
+implemented flow until merge and supervised environment evidence are complete.
 
 ## Requirements
 
 - Docker Engine or Docker Desktop
-- Docker Compose v2
-- internet access on the first build
-- approximately 2 GB of available memory
+- Docker Compose v2 with `--wait` support
+- internet access on first image/dependency pulls
+- approximately 2 GB available memory (estimate; not benchmarked)
 
 Java, Maven, and MySQL do not need to be installed on the host.
 
-## Optional local passwords
+## Configuration and secrets
 
-Copy the example file:
+Copy the local example:
 
-~~~bash
+```bash
 cp .env.example .env
-~~~
+```
 
-On Windows PowerShell:
-
-~~~powershell
+```powershell
 Copy-Item .env.example .env
-~~~
+```
 
-Change both password values before the first database start.
+Change both values before a shared environment. `.env` is ignored by Git, but
+ignore rules do not make weak or leaked credentials safe.
 
-The defaults make a local demonstration easy but must not be used for a public
-or shared environment.
+| Variable | Used by | Purpose |
+|---|---|---|
+| `DB_PASSWORD` | MySQL and application | Application database user's password |
+| `DB_ROOT_PASSWORD` | MySQL | Database administrative password |
 
-## Start
+The checked-in fallback passwords are only for local learning. There is no
+managed secret integration on `main`.
 
-~~~bash
+## Validate and start
+
+```bash
 docker compose config
 docker compose up --build --wait
-~~~
+```
 
-The first command checks the Compose file. The second command:
+Expected sequence:
 
-1. creates the MySQL volume
-2. starts MySQL
-3. waits for its health check
-4. builds the Spring Boot image
-5. starts SecureFlow
-6. waits for the application health check
+1. Compose creates its network and `mysql-data` named volume.
+2. MySQL 8.4 starts and passes `mysqladmin ping`.
+3. Docker builds the JAR in a Maven/Java 21 build stage with tests skipped.
+4. The JAR is copied into a smaller Java 21 runtime image.
+5. The application runs as the non-root `secureflow` user.
+6. Flyway applies pending migrations; Hibernate validates mappings.
+7. Startup demo seeding runs only when configured and data is empty.
+8. Docker checks `/actuator/health` until healthy or retries are exhausted.
 
-Open http://localhost:8080.
+Open <http://localhost:8080>. The host bind is `127.0.0.1`, so other machines
+cannot connect directly using the default mapping.
 
-Compose loads a presentation dataset when the database is empty. Every manual
-request adds a fresh batch with current timestamps:
+## Windows source with WSL Docker
 
-~~~bash
-curl -X POST http://localhost:8080/api/demo/seed
-~~~
+Run Compose from a WSL shell against the Windows-mounted repository, for
+example:
 
-To start without demo data, change `DEMO_SEED_ON_STARTUP` to `false` in
-**compose.yaml**.
+```bash
+cd /mnt/c/Users/btw/Desktop/SecureFlow
+docker compose up --build --wait
+```
 
-## Check status
+For faster and more reliable Linux filesystem performance, a WSL-native clone
+can be preferable. Do not maintain two uncontrolled copies; choose one working
+copy and use Git for synchronization.
 
-~~~bash
+## Health, status, and logs
+
+```bash
 docker compose ps
 curl --fail http://localhost:8080/actuator/health
-~~~
-
-The health response should include:
-
-~~~json
-{"status":"UP"}
-~~~
-
-## Logs
-
-All services:
-
-~~~bash
-docker compose logs --follow
-~~~
-
-Application only:
-
-~~~bash
 docker compose logs --follow app
-~~~
-
-Database only:
-
-~~~bash
 docker compose logs --follow database
-~~~
+```
 
-## Stop and restart
+A healthy response normally contains `{"status":"UP"}`. Health confirms the
+configured health contributors respond; it is not a complete business or
+security test.
 
-Stop while keeping data:
+## Demo operation
 
-~~~bash
+Compose sets `DEMO_SEED_ON_STARTUP=true`. To add a fresh batch immediately
+before a presentation:
+
+```bash
+curl -X POST http://localhost:8080/api/demo/seed
+```
+
+This mutates the database. Repeated use accumulates data and alerts.
+
+## Stop, restart, and data persistence
+
+Keep data:
+
+```bash
 docker compose down
-~~~
-
-Start again:
-
-~~~bash
 docker compose up --build --wait
-~~~
+```
 
-The **mysql-data** volume preserves transactions, alerts, and history.
+Delete all application database data:
 
-## Permanent reset
-
-Warning: this deletes all saved SecureFlow data.
-
-~~~bash
+```bash
 docker compose down --volumes
-~~~
+```
 
-The next start creates a new MySQL database, Flyway creates fresh tables, and
-the configured startup seeder loads the presentation dataset.
+The second command is destructive and should be used only after confirming the
+target Compose project and accepting data loss. Automated backup and restore
+are documented as the next data-protection layer.
 
-## Published image
+## Orphan-container warning
 
-After a successful push to main, GitHub Actions publishes:
+If Compose reports an orphan such as an older `db`/`database` service, first
+inspect:
 
-~~~text
+```bash
+docker compose ps --all
+docker ps --filter label=com.docker.compose.project=secureflow
+```
+
+Then, only for the verified SecureFlow Compose project:
+
+```bash
+docker compose down --remove-orphans
+docker compose up --build --wait
+```
+
+This removes project containers, not the named volume unless `--volumes` is
+also supplied.
+
+## Reproducible runtime verification
+
+The CI system job starts a disposable stack and runs:
+
+```bash
+bash scripts/verify-running-app.sh
+bash scripts/verify-volume-persistence.sh
+```
+
+The first script requires application health `UP`, creates and searches a real
+transaction, confirms at least one MySQL row, and rejects a root application
+UID. The second records the transaction count, performs a Compose stop/start
+without deleting the named volume, and requires the same count afterward.
+CI removes the disposable volume in its `always()` cleanup step.
+
+For an isolated local run beside a development stack, choose a different
+project name and port:
+
+```bash
+COMPOSE_PROJECT_NAME=secureflow-smoke APP_PORT=18080 \
+  docker compose up --build --detach --wait
+APP_BASE_URL=http://127.0.0.1:18080 \
+  COMPOSE_PROJECT_NAME=secureflow-smoke APP_PORT=18080 \
+  bash scripts/verify-running-app.sh
+COMPOSE_PROJECT_NAME=secureflow-smoke APP_PORT=18080 \
+  bash scripts/verify-volume-persistence.sh
+COMPOSE_PROJECT_NAME=secureflow-smoke APP_PORT=18080 \
+  docker compose down --volumes --remove-orphans
+```
+
+## Published image status
+
+The workflow intends to publish:
+
+```text
 ghcr.io/neueda-learning/114-secure-flow:latest
-~~~
+```
 
-Pull it with:
+The reviewed latest `main` run successfully built the image; the registry step
+then returned `denied`. The workflow grants `packages: write` only to the
+publication job and signs in with `GITHUB_TOKEN`. GitHub settings inspection on
+2026-08-06 verified that the package is linked to this repository, inherits its
+access, and lists `114-Secure-Flow` with **Admin** under **Manage Actions
+access**. Repository Actions settings also showed a locked organization-level
+default of read-only contents/packages. That policy is the leading explanation
+for the denied token, but publication must be rerun to prove the cause and fix.
 
-~~~bash
-docker pull ghcr.io/neueda-learning/114-secure-flow:latest
-~~~
+An organization/enterprise Actions administrator must allow this repository's
+workflow token to publish packages, or approve a separately governed delivery
+credential. Do not add a personal token without owner-approved storage,
+rotation, and least privilege. Then rerun delivery and verify the package
+timestamp/digest. See GitHub's
+[package-permissions guidance](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages).
+Adding an immutable SHA tag is the recommended release-traceability enhancement.
 
-The image contains the application only. It still requires a MySQL database and
-the DB_URL, DB_USERNAME, and DB_PASSWORD environment variables.
+The image contains only the application and still needs MySQL plus `DB_URL`,
+`DB_USERNAME`, and `DB_PASSWORD`.
 
-## Security
+## Troubleshooting and recovery
 
-The default port mapping is:
+### MySQL remains unhealthy
 
-~~~yaml
-127.0.0.1:8080:8080
-~~~
-
-This prevents other computers from connecting directly.
-
-Do not change it to a public bind without adding authentication, HTTPS, a
-firewall, managed secrets, monitoring, and backups.
-
-## Troubleshooting
-
-### Port 8080 is already used
-
-Stop the other application using port 8080 or change the host side of the port
-mapping.
-
-### Database is unhealthy
-
-~~~bash
+```bash
 docker compose logs database
-~~~
+```
 
-If a password was changed after MySQL created its volume, restore the original
-password or intentionally reset the volume.
+If passwords changed after volume creation, the stored database account does
+not automatically adopt new environment values. Restore the correct value or
+reset only after accepting data loss.
 
-### Application is unhealthy
+### Application remains unhealthy
 
-~~~bash
+```bash
 docker compose logs app
-~~~
+```
 
-Look for a database connection error or Flyway migration error.
+Check database connectivity, Flyway validation, entity/schema mismatch, port,
+and memory failures.
 
-### Rebuild without cached layers
+### Rebuild without cache
 
-~~~bash
-docker compose build --no-cache
+```bash
+docker compose build --no-cache app
 docker compose up --wait
-~~~
+```
+
+### Delivery step needs attention
+
+Inspect the specific GitHub Actions step. Stage-level evidence distinguishes a
+successful Maven quality result from image publication and deployment results.
+
+## Shared-environment readiness checklist
+
+Before any production/shared deployment, owners must design and verify at least:
+
+- authentication, authorization, and privileged demo endpoint controls
+- HTTPS/reverse proxy and network/firewall rules
+- managed secrets and credential rotation
+- immutable image identity, SBOM, signature/provenance, and vulnerability scan
+- resource limits, logs, metrics, alerting, and incident ownership
+- MySQL hardening, encryption, retention, backup, restore, and disaster recovery
+- data/privacy/legal review and access/audit requirements
+- staged deployment, rollback, change approval, and supervised first release
+
+## Maintenance
+
+Keep this document aligned with `Dockerfile`, `compose.yaml`, runtime variables,
+health checks, and actual registry/deployment evidence. Never describe a draft
+PR as deployed.

@@ -1,52 +1,65 @@
 # Security policy
 
+## Purpose and scope
+
+This file explains vulnerability reporting and the supported project baseline.
+It provides evidence-based security guidance while reserving formal assurance
+for qualified review. Implemented controls and the maturity roadmap are in
+[Security and threat model](docs/security-and-threat-model.md).
+
 ## Supported version
 
-The latest commit on **main** is the supported version.
+The latest commit on `main` receives fixes. Tagged releases and a
+long-term-support policy are available as future governance enhancements.
 
-## Reporting a vulnerability
+## Report a vulnerability privately
 
-Do not publish sensitive vulnerability details in a normal public issue.
+Do not publish sensitive vulnerability details in a normal public issue. Use
+the repository **Security** tab to open a private security advisory if that
+feature is available. Otherwise, contact a repository owner through an approved
+private channel; a dedicated security email is a future governance enhancement.
 
-Use the repository's **Security** tab to open a private security advisory. Include:
+Include only what is necessary:
 
-- affected endpoint or component
-- steps to reproduce
-- expected and actual behavior
-- possible impact
-- any suggested mitigation
+- affected endpoint, component, and version/commit
+- minimal reproduction steps
+- expected and observed behavior
+- potential impact and preconditions
+- suggested mitigation, if known
 
-Do not include real passwords, access tokens, customer data, or financial data.
+Do not include real credentials, tokens, private keys, personal data,
+transaction data, customer information, or confidential infrastructure
+details. Redact logs before sharing.
 
-## Deployment boundary
+## Current security boundary
 
-The included Docker Compose setup is for local learning and demonstrations.
+The supplied Compose setup is intentionally scoped to local learning and
+demonstrations. Verified controls include a loopback-only host port, a non-root
+application container user, request validation, constrained alert transitions,
+and a named database volume. Identity, authorization, TLS, rate/CSRF controls,
+managed secrets, backup automation, security-event monitoring, and automated
+scanning are the documented next-stage controls for networked use.
 
-By default:
+Keep the supplied application in its controlled local environment until those
+shared-environment controls are implemented and verified.
 
-- the application binds to 127.0.0.1
-- the application container runs as a non-root user
-- MySQL data stays in a named Docker volume
-- no authentication or HTTPS is provided
+## Secrets and incident response
 
-Before any public or shared deployment, add:
+Never commit `.env`, production connection strings, access tokens, private
+keys, certificates, or real data. If a secret is committed:
 
-- user authentication and authorization
-- HTTPS through a trusted reverse proxy
-- managed secrets instead of example passwords
-- firewall and network restrictions
-- database backup and restore procedures
-- log monitoring and dependency update processes
+1. Revoke or rotate it immediately.
+2. Determine where it was used and review relevant logs.
+3. Notify the responsible owner through the approved incident channel.
+4. Remove it from current files without rewriting history unless qualified
+   repository/security owners approve a separate remediation plan.
+5. Record the incident without disclosing the secret.
 
-## Secrets
+Removing a value in a later commit does not invalidate earlier exposure.
 
-Never commit:
+## Response expectations
 
-- .env
-- database passwords
-- GitHub tokens
-- private keys or certificates
-- production connection strings
-
-If a secret is accidentally committed, revoke or rotate it immediately. Removing
-the text from a later commit does not make the exposed secret safe again.
+The project currently uses an owner-led response: acknowledge reports, assess
+severity, agree a private remediation plan, verify the fix, and disclose
+responsibly where appropriate. A formal response-time/remediation service level
+is a future governance enhancement.
